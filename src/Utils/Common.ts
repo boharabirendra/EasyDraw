@@ -20,6 +20,7 @@ export enum SHAPES{
     ERASER,
     NONE,
     CURSOR,
+    DRAW,
 }
 
 export function adjustToolSection(){
@@ -27,3 +28,4 @@ export function adjustToolSection(){
     cursorBtn.style.backgroundColor = "#E0DFFF";
     body.style.cursor = "default";
 }
+

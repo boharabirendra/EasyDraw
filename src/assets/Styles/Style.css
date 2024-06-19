@@ -38,3 +38,23 @@ body{
     transition: background-color 0.3s ease;
   }
   
+.redo_undo{
+    display: flex;
+    gap: 15px;
+    position: absolute;
+    bottom: 3%;
+    left: 5%;
+    padding: 6px 10px;
+    background-color: #ECECF4;
+    border-radius: 5px;
+}
+
+.redo_undo button{
+    border: none;
+    background-color: transparent;
+}
+
+.redo_undo img{
+    width: 16px;
+    cursor: pointer;
+}

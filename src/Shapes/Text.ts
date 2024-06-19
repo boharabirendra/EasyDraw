@@ -1,4 +1,4 @@
-import { IPoint } from "../Utils/Common";
+import { IPoint, SHAPES } from "../Utils/Common";
 import { Shape } from "./Shape";
 
 export class Text extends Shape {
@@ -6,7 +6,7 @@ export class Text extends Shape {
   private boundingBox: { x: number; y: number; width: number; height: number };
 
   constructor(position: IPoint, text: string, boundingBox: { x: number; y: number; width: number; height: number }) {
-    super(position);
+    super(position, SHAPES.TEXT);
     this.text = text;
     this.boundingBox = boundingBox;
   }
@@ -29,5 +29,12 @@ export class Text extends Shape {
     this.position.posY += dy;
     this.boundingBox.x += dx;
     this.boundingBox.y += dy;
+  }
+
+  isMouseNearEdge(currentMousePosition: IPoint): string | boolean | null {
+    return null;
+  }
+  reSize(...args: any): void {
+    
   }
 }

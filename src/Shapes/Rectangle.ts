@@ -58,21 +58,22 @@ export class Rectangle extends Shape {
     return null;
   }
 
-  reSize(...args:any[]) {
-    switch (args[0]) {
+  reSize(...args:any) {
+    const [edge, dx, dy] = args;
+    switch (edge) {
       case "left":
-        this.position.posX += args[1];
-        this.dimension.width -= args[1];
+        this.position.posX += dx;
+        this.dimension.width -= dx;
         break;
       case "right":
-        this.dimension.width += args[1];
+        this.dimension.width += dx;
         break;
       case "top":
-        this.position.posY += args[2];
-        this.dimension.height -= args[2];
+        this.position.posY += dy;
+        this.dimension.height -= dy;
         break;
       case "bottom":
-        this.dimension.height += args[2];
+        this.dimension.height += dy;
         break;
     }
   }

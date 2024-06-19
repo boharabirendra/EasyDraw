@@ -12,7 +12,7 @@ export class Circle extends Shape {
 
   draw(ctx: CanvasRenderingContext2D) {
     ctx.beginPath();
-    ctx.fillStyle = "gray"
+    ctx.fillStyle = "gray";
     ctx.arc(
       this.position.posX,
       this.position.posY,
@@ -38,9 +38,10 @@ export class Circle extends Shape {
     return Math.abs(distance - this.radius) < EDGE_DETECTION_WIDTH;
   }
 
-  reSize(...args:any[]): void {
-    const x = args[0]?.posX! - this.position.posX;
-    const y = args[0]?.posY! - this.position.posY;
+  reSize(...args: any): void {
+    const [currentMousePosition] = args;
+    const x = currentMousePosition.posX - this.position.posX;
+    const y = currentMousePosition.posY - this.position.posY;
     this.radius = Math.sqrt(x * x + y * y);
   }
 

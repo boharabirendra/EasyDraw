@@ -6,6 +6,7 @@ import { Line } from "../Shapes/Line";
 import { Rectangle } from "../Shapes/Rectangle";
 import { Shape } from "../Shapes/Shape";
 import { Text } from "../Shapes/Text";
+import { Draw } from "../Shapes/Draw";
 import { IPoint, SHAPES, adjustToolSection } from "../Utils/Common";
 import {
   body,
@@ -25,6 +26,8 @@ export class Canvas {
   private selectedShape: Shape | undefined = undefined;
   private resizeEdge: string | null | boolean = null;
   private isResizing: boolean = false;
+  private redoStack: Shape[] = [];
+  private currentDrawing?: Draw;
 
   constructor() {
     this.canvas = document.createElement("canvas");
@@ -36,6 +39,17 @@ export class Canvas {
 
     this.init();
     highlightCurrentSelectedTool();
+
+    /* Redo & Undo Events*/
+    document
+      .querySelector("#undoBtn")
+      ?.addEventListener("click", this.undo.bind(this));
+    document
+      .querySelector("#redoBtn")
+      ?.addEventListener("click", this.redo.bind(this));
+    document.addEventListener("keydown", this.undoUsingKeyboard.bind(this));
+    document.addEventListener("keydown", this.redoUsingKeyboard.bind(this));
+    this.activateRedoUndoBtn(this.shapes, this.redoStack);
   }
 
   init() {
@@ -57,6 +71,9 @@ export class Canvas {
     });
     document.getElementById("arrowBtn")?.addEventListener("click", () => {
       this.currentShape = SHAPES.ARROW;
+    });
+    document.getElementById("drawBtn")?.addEventListener("click", () => {
+      this.currentShape = SHAPES.DRAW;
     });
     document.getElementById("textBtn")?.addEventListener("click", () => {
       this.currentShape = SHAPES.TEXT;
@@ -89,6 +106,11 @@ export class Canvas {
           this.dragStartPosition = currentMousePosition;
         }
       }
+    } else if (this.currentShape === SHAPES.DRAW) {
+      this.isDrawing = true;
+      this.currentDrawing = new Draw(currentMousePosition);
+      body.style.cursor = "crosshair";
+      this.shapes.push(this.currentDrawing);
     } else {
       this.isDrawing = true;
       this.startPosition = currentMousePosition;
@@ -108,7 +130,6 @@ export class Canvas {
     } else if (this.isDrawing) {
       this.clearCanvas();
       this.shapes.forEach((shape) => shape.draw(this.ctx));
-
       switch (this.currentShape) {
         case SHAPES.RECTANGLE:
           this.drawRectangle(position);
@@ -121,6 +142,13 @@ export class Canvas {
           break;
         case SHAPES.ARROW:
           this.drawArrowLine(position);
+          break;
+        case SHAPES.DRAW:
+          if (this.currentDrawing) {
+            body.style.cursor = "crosshair";
+            this.currentDrawing.addPoint(position);
+            this.currentDrawing.draw(this.ctx);
+          }
           break;
         case SHAPES.TEXT:
           this.drawText(position);
@@ -136,14 +164,25 @@ export class Canvas {
       const dy = position.posY - this.startResizingPosition.posY;
       switch (this.selectedShape?.shapeType) {
         case SHAPES.RECTANGLE:
-          this.selectedShape?.reSize(this.resizeEdge!, dx, dy);
+          this.selectedShape?.reSize(this.resizeEdge, dx, dy);
           this.startResizingPosition = position;
           this.clearCanvas();
           this.shapes.forEach((shape) => shape.draw(this.ctx));
           break;
         case SHAPES.CIRCLE:
-          const currentMousePosition = this.getMousePosition(event);
-          this.selectedShape?.reSize({posX: currentMousePosition.posX, posY: currentMousePosition.posY});
+          this.selectedShape?.reSize(position);
+          this.startResizingPosition = position;
+          this.clearCanvas();
+          this.shapes.forEach((shape) => shape.draw(this.ctx));
+          break;
+        case SHAPES.LINE:
+          this.selectedShape?.reSize(this.resizeEdge, position);
+          this.startResizingPosition = position;
+          this.clearCanvas();
+          this.shapes.forEach((shape) => shape.draw(this.ctx));
+          break;
+        case SHAPES.ARROW:
+          this.selectedShape?.reSize(this.resizeEdge, position);
           this.startResizingPosition = position;
           this.clearCanvas();
           this.shapes.forEach((shape) => shape.draw(this.ctx));
@@ -161,6 +200,7 @@ export class Canvas {
       });
       body.style.cursor = cursorStyle;
     }
+    this.activateRedoUndoBtn(this.shapes, this.redoStack);
   }
 
   onMouseUp(event: MouseEvent) {
@@ -218,14 +258,20 @@ export class Canvas {
   }
 
   /* Draw rectangle */
-  private drawRectangle(currentMousePosition: IPoint, finalize: boolean = false) {
+  private drawRectangle(
+    currentMousePosition: IPoint,
+    finalize: boolean = false
+  ) {
     const width = currentMousePosition.posX - this.startPosition.posX;
     const height = currentMousePosition.posY - this.startPosition.posY;
     if (!finalize) {
       const rect = new Rectangle(this.startPosition, { width, height });
       rect.draw(this.ctx);
     } else {
-      const newRect = Rectangle.generateShape(this.startPosition, currentMousePosition);
+      const newRect = Rectangle.generateShape(
+        this.startPosition,
+        currentMousePosition
+      );
       this.shapes.push(newRect);
       newRect.draw(this.ctx);
     }
@@ -282,6 +328,12 @@ export class Canvas {
       newArrowLine.draw(this.ctx);
     }
   }
+
+  /* Drawing */
+  private freeDrawing(
+    currentMousePosition: IPoint,
+    finalize: boolean = false
+  ) {}
 
   /* Draw text */
   private drawText(position: IPoint) {
@@ -353,6 +405,59 @@ export class Canvas {
         width,
         height
       );
+    }
+  }
+
+  /* Undo & Redo */
+  private undo() {
+    if (this.shapes.length > 0) {
+      const lastMomento = this.shapes.pop();
+      if (lastMomento) {
+        this.redoStack.push(lastMomento);
+        this.clearCanvas();
+        this.shapes.forEach((shape) => {
+          shape.draw(this.ctx);
+        });
+      }
+    }
+  }
+  private redo() {
+    if (this.redoStack.length > 0) {
+      const lastMomento = this.redoStack.pop();
+      if (lastMomento) {
+        this.shapes.push(lastMomento);
+        this.clearCanvas();
+        this.shapes.forEach((shape) => {
+          shape.draw(this.ctx);
+        });
+      }
+    }
+  }
+  private undoUsingKeyboard(event: KeyboardEvent) {
+    if (event.ctrlKey && event.key === "z") {
+      event.preventDefault();
+      this.undo();
+    }
+  }
+  private redoUsingKeyboard(event: KeyboardEvent) {
+    if (event.ctrlKey && event.key === "y") {
+      event.preventDefault();
+      this.redo();
+    }
+  }
+
+  private activateRedoUndoBtn(undoStack: Shape[], redoStack: Shape[]) {
+    const undoBtn = document.querySelector("#undoBtn") as HTMLButtonElement;
+    const redoBtn = document.querySelector("#redoBtn") as HTMLButtonElement;
+    if (undoStack.length === 0) {
+      undoBtn.style.opacity = "0.4";
+    } else {
+      undoBtn.style.opacity = "1";
+    }
+    if (redoStack.length === 0) {
+      redoBtn.style.opacity = "0.4";
+    } else {
+      redoBtn.style.opacity = "1";
     }
   }
 }

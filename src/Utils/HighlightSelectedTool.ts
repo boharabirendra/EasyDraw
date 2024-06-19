@@ -1,13 +1,15 @@
 let toolbarIcons: NodeListOf<HTMLButtonElement>;
 export const body = document.querySelector("body") as HTMLBodyElement;
-export const cursorBtn = document.querySelector("#cursorBtn") as HTMLButtonElement;
+export const cursorBtn = document.querySelector(
+  "#cursorBtn"
+) as HTMLButtonElement;
 export function highlightCurrentSelectedTool(): void {
   const toolbarContainer = document.querySelector(
     ".toolbar_container"
   ) as HTMLDivElement;
   toolbarIcons = toolbarContainer.querySelectorAll("button");
   toolbarIcons.forEach((tool) => {
-    if(tool.id === "cursorBtn"){
+    if (tool.id === "cursorBtn") {
       tool.style.backgroundColor = "#E0DFFF";
     }
     tool.addEventListener("click", () => {

@@ -1,40 +1,75 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>EasyDraw</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Gloria+Hallelujah&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="/src/assets/Styles/Style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Gloria+Hallelujah&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/src/assets/Styles/Style.css" />
   </head>
   <body>
     <div class="toolbar_container">
-        <div class="toolbar_icon">
-          <button id="cursorBtn"><img src="./src/assets/Images/cursor.png" alt="cursor"></button>
-        </div>
-        <div class="toolbar_icon">
-          <button id="rectangleBtn"><img src="./src/assets/Images/rectangle.png" alt="rectangle"></button>
-        </div>
-        <div class="toolbar_icon">
-          <button id="circleBtn"><img src="./src/assets/Images/oval.png" alt="circle"></button>
-        </div>
-        <div class="toolbar_icon">
-          <button id="lineBtn"><img src="./src/assets/Images/line.png" alt="line"></button>
-        </div>
-        <div class="toolbar_icon">
-          <button id="arrowBtn"><img src="./src/assets/Images/arrow.png" alt="arrow line"></button>
-        </div>
-        <div class="toolbar_icon">
-          <button id="textBtn"><img src="./src/assets/Images/text.png" alt="text"></button>
-        </div>
-        <div class="toolbar_icon">
-          <button id="eraserBtn"><img src="./src/assets/Images/eraser.png" alt="eraser"></button>
-        </div>
-        <div class="toolbar_icon">
-          <button id="clearBtn"><img src="./src/assets/Images/broom.png" alt="clear"></button>
-        </div>
+      <div class="toolbar_icon">
+        <button id="cursorBtn">
+          <img src="./src/assets/Images/cursor.png" alt="cursor" />
+        </button>
+      </div>
+      <div class="toolbar_icon">
+        <button id="rectangleBtn">
+          <img src="./src/assets/Images/rectangle.png" alt="rectangle" />
+        </button>
+      </div>
+      <div class="toolbar_icon">
+        <button id="circleBtn">
+          <img src="./src/assets/Images/oval.png" alt="circle" />
+        </button>
+      </div>
+      <div class="toolbar_icon">
+        <button id="lineBtn">
+          <img src="./src/assets/Images/line.png" alt="line" />
+        </button>
+      </div>
+      <div class="toolbar_icon">
+        <button id="arrowBtn">
+          <img src="./src/assets/Images/arrow.png" alt="arrow line" />
+        </button>
+      </div>
+      <div class="toolbar_icon">
+        <button id="drawBtn">
+          <img src="./src/assets/Images/pencil.png" alt="pencil" />
+        </button>
+      </div>
+      <div class="toolbar_icon">
+        <button id="textBtn">
+          <img src="./src/assets/Images/text.png" alt="text" />
+        </button>
+      </div>
+      <div class="toolbar_icon">
+        <button id="eraserBtn">
+          <img src="./src/assets/Images/eraser.png" alt="eraser" />
+        </button>
+      </div>
+      <div class="toolbar_icon">
+        <button id="clearBtn">
+          <img src="./src/assets/Images/broom.png" alt="clear" />
+        </button>
+      </div>
+    </div>
+    <div class="left_bottom_container">
+      <div class="zoom"></div>
+      <div class="redo_undo">
+        <button id="undoBtn">
+          <img src="./src/assets/Images/undo.png" alt="Undo" />
+        </button>
+        <button id="redoBtn">
+          <img src="./src/assets/Images/redo.png" alt="Redo" />
+        </button>
+      </div>
     </div>
     <div id="app"></div>
     <script type="module" src="/src/main.ts"></script>

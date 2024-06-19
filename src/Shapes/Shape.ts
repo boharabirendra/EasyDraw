@@ -15,5 +15,5 @@ export abstract class Shape {
     abstract isMouseWithinShape(currentMousePosition: IPoint): boolean;
     abstract move(dx: number, dy: number): void
     abstract isMouseNearEdge(currentMousePosition: IPoint): string | null | boolean;
-    abstract reSize(...args:any[]): void;
+    abstract reSize(...args:any): void;
 }
