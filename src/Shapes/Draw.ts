@@ -26,15 +26,16 @@ export class Draw extends Shape {
     ctx.strokeStyle = "black";
     ctx.lineWidth = 2;
   }
-
+   // @ts-ignore
   isMouseWithinShape(currentMousePosition: IPoint): boolean {
     return false;
   }
-
+   // @ts-ignore
   isMouseNearEdge(currentMousePosition: IPoint): string | boolean | null {
     return null;
   }
-
+   // @ts-ignore
   move(dx: number, dy: number): void {}
+   // @ts-ignore
   reSize(...args: any): void {}
 }

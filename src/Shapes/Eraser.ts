@@ -17,12 +17,16 @@ export class Eraser extends Shape {
       this.end.posY - this.position.posY
     );
   }
+   // @ts-ignore
   isMouseNearEdge(currentMousePosition: IPoint): string | boolean | null {
     return null;
   }
+   // @ts-ignore
   isMouseWithinShape(currentMousePosition: IPoint): boolean {
     return false;
   }
+   // @ts-ignore
   reSize(...args: any): void {}
+   // @ts-ignore
   move(dx: number, dy: number): void {}
 }

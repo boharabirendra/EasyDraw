@@ -329,12 +329,6 @@ export class Canvas {
     }
   }
 
-  /* Drawing */
-  private freeDrawing(
-    currentMousePosition: IPoint,
-    finalize: boolean = false
-  ) {}
-
   /* Draw text */
   private drawText(position: IPoint) {
     const input = document.createElement("input");
