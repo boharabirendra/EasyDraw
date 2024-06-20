@@ -13,44 +13,44 @@
     <link rel="stylesheet" href="/src/assets/Styles/Style.css" />
   </head>
   <body>
-    <div class="toolbar_container">
+    <div class="toolbar_container" id="toolbar_container">
       <div class="toolbar_icon">
-        <button id="cursorBtn">
+        <button id="cursorBtn" data-shape="CURSOR">
           <img src="./src/assets/Images/cursor.png" alt="cursor" />
         </button>
       </div>
       <div class="toolbar_icon">
-        <button id="rectangleBtn">
+        <button id="rectangleBtn" data-shape="RECTANGLE">
           <img src="./src/assets/Images/rectangle.png" alt="rectangle" />
         </button>
       </div>
       <div class="toolbar_icon">
-        <button id="circleBtn">
+        <button id="circleBtn" data-shape="CIRCLE">
           <img src="./src/assets/Images/oval.png" alt="circle" />
         </button>
       </div>
       <div class="toolbar_icon">
-        <button id="lineBtn">
+        <button id="lineBtn" data-shape="LINE">
           <img src="./src/assets/Images/line.png" alt="line" />
         </button>
       </div>
       <div class="toolbar_icon">
-        <button id="arrowBtn">
+        <button id="arrowBtn" data-shape="ARROW">
           <img src="./src/assets/Images/arrow.png" alt="arrow line" />
         </button>
       </div>
       <div class="toolbar_icon">
-        <button id="drawBtn">
+        <button id="drawBtn" data-shape="DRAW">
           <img src="./src/assets/Images/pencil.png" alt="pencil" />
         </button>
       </div>
       <div class="toolbar_icon">
-        <button id="textBtn">
+        <button id="textBtn" data-shape="TEXT">
           <img src="./src/assets/Images/text.png" alt="text" />
         </button>
       </div>
       <div class="toolbar_icon">
-        <button id="eraserBtn">
+        <button id="eraserBtn" data-shape="ERASER">
           <img src="./src/assets/Images/eraser.png" alt="eraser" />
         </button>
       </div>
@@ -61,12 +61,12 @@
       </div>
     </div>
     <div class="left_bottom_container">
-      <div class="zoom">
-        <button class="zoom__out" title="Zoom out"><img src="./src/assets/Images/minus.png" alt="zoom" /></button>
-        <button class="zoom__percentage" title="Reset zoom">100%</button>
-        <button class="zoom__in" title="Zoom in"><img src="./src/assets/Images/plus.png" alt="Undo" /></button>
+      <div class="zoom" id="zoom">
+        <button id="zoom__out" class="zoom__out" title="Zoom out"><img src="./src/assets/Images/minus.png" alt="zoom out" /></button>
+        <button id="zoom__percentage" class="zoom__percentage" title="Reset zoom"></button>
+        <button id="zoom__in" class="zoom__in" title="Zoom in"><img src="./src/assets/Images/plus.png" alt="Zoom in" /></button>
       </div>
-      <div class="redo_undo">
+      <div class="redo_undo" id="redo_undo">
         <button id="undoBtn" title="Undo">
           <img src="./src/assets/Images/undo.png" alt="Undo" />
         </button>
@@ -147,7 +147,9 @@
         </div>
       </div>
     </div>
-
+    <div class="layer__container">
+      `
+    </div>
     <div id="app"></div>
     <script type="module" src="/src/main.ts"></script>
   </body>

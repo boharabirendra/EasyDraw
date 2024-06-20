@@ -1,9 +1,10 @@
-import { EDGE_DETECTION_WIDTH } from "../Constants/Constants";
-import { IPoint, IDimension, SHAPES } from "../Utils/Common";
+import { EDGE_DETECTION_WIDTH, SELECTED_SHAPE_INDICATOR_CIRCLE_RADIUS } from "../Constants/Constants";
+import { IPoint, IDimension, SHAPES, selectionIndicateCircle, getLeftTopCircleCenter, getLeftBottomCircleCenter, getRightTopCircleCenter, getRightBottomCircleCenter } from "../Utils/Common";
 import { Shape } from "./Shape";
 
 export class Rectangle extends Shape {
   dimension: IDimension;
+  static isSelected: boolean = false;
   fillColor: string;
   strokeColor: string;
   strokeWidth: number;
@@ -31,7 +32,34 @@ export class Rectangle extends Shape {
     ctx.strokeStyle = this.strokeColor;
     ctx.stroke();
     ctx.restore();
+    if(Rectangle.isSelected){
+      this.drawOutline(ctx);
+    }
   }
+
+  drawOutline(ctx: CanvasRenderingContext2D): void {
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(
+      this.position.posX - 2,
+      this.position.posY - 2,
+      this.dimension.width + 4,
+      this.dimension.height + 4,
+    );
+    ctx.lineWidth = 2;
+    ctx.strokeStyle = "gray";
+    ctx.stroke();
+    ctx.restore();
+    const leftTopCircleCenter:IPoint = getLeftTopCircleCenter(this.position);
+    const leftBottomCircle:IPoint = getLeftBottomCircleCenter(this.position, this.dimension);
+    const rightTopCircle: IPoint = getRightTopCircleCenter(this.position, this.dimension);
+    const rightBottomCircle: IPoint = getRightBottomCircleCenter(this.position, this.dimension);
+    selectionIndicateCircle(ctx,leftTopCircleCenter, SELECTED_SHAPE_INDICATOR_CIRCLE_RADIUS)
+    selectionIndicateCircle(ctx,leftBottomCircle, SELECTED_SHAPE_INDICATOR_CIRCLE_RADIUS)
+    selectionIndicateCircle(ctx,rightTopCircle, SELECTED_SHAPE_INDICATOR_CIRCLE_RADIUS)
+    selectionIndicateCircle(ctx,rightBottomCircle, SELECTED_SHAPE_INDICATOR_CIRCLE_RADIUS)
+  }
+
 
   isMouseWithinShape(point: IPoint): boolean {
     return (

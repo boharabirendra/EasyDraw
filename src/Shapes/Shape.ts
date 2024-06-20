@@ -14,4 +14,5 @@ export abstract class Shape {
     abstract move(dx: number, dy: number): void
     abstract isMouseNearEdge(currentMousePosition: IPoint): string | null | boolean;
     abstract reSize(...args:any): void;
+    abstract drawOutline(ctx: CanvasRenderingContext2D): void;
 }

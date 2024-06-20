@@ -14,7 +14,7 @@ export class Eraser extends Shape {
   }
 
   draw(ctx: CanvasRenderingContext2D): void {
-    if (this.path.length < 2) return
+    if (this.path.length < 2) return;
     ctx.save();
     ctx.beginPath();
     ctx.strokeStyle = "white";
@@ -26,16 +26,18 @@ export class Eraser extends Shape {
     ctx.stroke();
     ctx.restore();
   }
-   // @ts-ignore
+  // @ts-ignore
   isMouseNearEdge(currentMousePosition: IPoint): string | boolean | null {
     return null;
   }
-   // @ts-ignore
+  // @ts-ignore
   isMouseWithinShape(currentMousePosition: IPoint): boolean {
     return false;
   }
-   // @ts-ignore
+  // @ts-ignore
   reSize(...args: any): void {}
-   // @ts-ignore
+  // @ts-ignore
   move(dx: number, dy: number): void {}
+  //@ts-ignore
+  drawOutline(ctx: CanvasRenderingContext2D): void {}
 }

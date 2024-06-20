@@ -36,6 +36,10 @@ export class Canvas {
   private selectedShapeIndex: number | null = null;
   private toBeColorChangeShape: Shape | undefined = undefined;
   private drawingColor: string = "black";
+  private scale: number = 1;
+  private scaleFactor: number = 1.1;
+  private zoomPercentage: number = 100;
+  private zoomPercentageEl: HTMLButtonElement | null = null;
 
   constructor() {
     this.canvas = document.createElement("canvas");
@@ -44,22 +48,8 @@ export class Canvas {
     this.ctx = this.canvas.getContext("2d") as CanvasRenderingContext2D;
     this.ctx.font = '24px "Gloria Hallelujah", sans-serif';
     document.getElementById("app")?.appendChild(this.canvas);
-
+    this.zoomPercentageEl = document.querySelector("#zoom__percentage") as HTMLButtonElement;
     this.init();
-    highlightCurrentSelectedTool();
-    this.changeShapeColor();
-
-    /* Redo & Undo Events*/
-    document
-      .querySelector("#undoBtn")
-      ?.addEventListener("click", this.undo.bind(this));
-    document
-      .querySelector("#redoBtn")
-      ?.addEventListener("click", this.redo.bind(this));
-    document.addEventListener("keydown", this.undoUsingKeyboard.bind(this));
-    document.addEventListener("keydown", this.redoUsingKeyboard.bind(this));
-    document.addEventListener("keydown", this.deleteSelectedShape.bind(this));
-    this.activateRedoUndoBtn(this.shapes, this.redoStack);
   }
 
   init() {
@@ -67,47 +57,70 @@ export class Canvas {
     this.canvas.addEventListener("mousemove", this.onMouseMove.bind(this));
     this.canvas.addEventListener("mouseup", this.onMouseUp.bind(this));
 
-    document.getElementById("cursorBtn")?.addEventListener("click", () => {
-      this.currentShape = SHAPES.CURSOR;
-      this.isErasing = false;
-    });
-    document.getElementById("rectangleBtn")?.addEventListener("click", () => {
-      this.currentShape = SHAPES.RECTANGLE;
-      this.isErasing = false;
-    });
-    document.getElementById("circleBtn")?.addEventListener("click", () => {
-      this.currentShape = SHAPES.CIRCLE;
-      this.isErasing = false;
-    });
-    document.getElementById("lineBtn")?.addEventListener("click", () => {
-      this.currentShape = SHAPES.LINE;
-      this.isErasing = false;
-    });
-    document.getElementById("arrowBtn")?.addEventListener("click", () => {
-      this.currentShape = SHAPES.ARROW;
-    });
-    document.getElementById("drawBtn")?.addEventListener("click", () => {
-      this.currentShape = SHAPES.DRAW;
-      this.isErasing = false;
-    });
-    document.getElementById("textBtn")?.addEventListener("click", () => {
-      this.currentShape = SHAPES.TEXT;
-      this.isErasing = false;
-    });
-    document.getElementById("eraserBtn")?.addEventListener("click", () => {
-      this.currentShape = SHAPES.ERASER;
-    });
-    document.getElementById("clearBtn")?.addEventListener("click", () => {
-      this.shapes = [];
-      this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-      this.currentShape = SHAPES.CURSOR;
-      adjustToolSection();
-      this.isErasing = false;
-    });
+    /* Tool bar selection */
+    document
+      .querySelector("#toolbar_container")
+      ?.querySelectorAll("button")
+      .forEach((button) => {
+        button.addEventListener("click", () => {
+          const shape = button.getAttribute("data-shape");
+          if (shape) {
+            this.currentShape = SHAPES[shape as keyof typeof SHAPES];
+            this.isErasing = shape === "ERASER";
+          }
+          if (button.id === "clearBtn") {
+            this.shapes = [];
+            this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+            this.currentShape = SHAPES.CURSOR;
+            this.isErasing = false;
+            adjustToolSection();
+          }
+        });
+      });
+
+    /*Undo & Redo */
+    document.querySelector("#redo_undo")?.querySelectorAll("button")
+    .forEach(button => {
+      button.addEventListener("click", ()=>{
+        if(button.id === "undoBtn"){
+          this.undo();
+        }else if(button.id === "redoBtn"){
+          this.redo();
+        }
+      })
+    })
+
+    document.querySelector("#zoom")?.querySelectorAll("button")
+    .forEach(button => {
+      button.addEventListener("click", ()=>{
+        if(button.id === "zoom__out"){
+          this.zoomOut();
+        }else if(button.id === "zoom__in"){
+          this.zoomIn();
+        }else if(button.id === "zoom__percentage"){
+          this.scale = 1;
+          this.zoomPercentage = 100;
+          this.zoomPercentageEl!.innerHTML = `${this.zoomPercentage}%`;
+          this.displayAllShapes();
+        }
+      })
+    })
+   
+
+    document.addEventListener("keydown", this.keyboardActions.bind(this));
+    this.zoomPercentageEl!.innerHTML = `${this.zoomPercentage}%`;
+    /* Function call */
+    highlightCurrentSelectedTool();
+    this.changeShapeColor();
   }
 
   onMouseDown(event: MouseEvent) {
     const currentMousePosition = this.getMousePosition(event);
+    Rectangle.isSelected = false;
+    Circle.isSelected = false;
+    Line.isSelected = false;
+    ArrowLine.isSelected = false;
+    this.displayAllShapes();
     if (this.currentShape === SHAPES.CURSOR) {
       this.selectedShape = this.shapes.find((shape, index) => {
         if (shape) {
@@ -117,6 +130,7 @@ export class Canvas {
       });
       this.toBeColorChangeShape = this.selectedShape;
       if (this.selectedShape) {
+        this.selectShapeHighlighter(this.selectedShape);
         this.selectedShapeForDeletion.push({
           index: this.selectedShapeIndex!,
           shape: this.selectedShape,
@@ -438,34 +452,20 @@ export class Canvas {
       }
     }
   }
-  private undoUsingKeyboard(event: KeyboardEvent) {
+
+  /*Keyboard actions*/
+  private keyboardActions(event: KeyboardEvent) {
+    /* Undo actions */
     if (event.ctrlKey && event.key === "z") {
       event.preventDefault();
       this.undo();
     }
-  }
-  private redoUsingKeyboard(event: KeyboardEvent) {
+    /* Redo action */
     if (event.ctrlKey && event.key === "y") {
       event.preventDefault();
       this.redo();
     }
-  }
-  private activateRedoUndoBtn(undoStack: Shape[], redoStack: Shape[]) {
-    const undoBtn = document.querySelector("#undoBtn") as HTMLButtonElement;
-    const redoBtn = document.querySelector("#redoBtn") as HTMLButtonElement;
-    if (undoStack.length === 0) {
-      undoBtn.style.opacity = "0.4";
-    } else {
-      undoBtn.style.opacity = "1";
-    }
-    if (redoStack.length === 0) {
-      redoBtn.style.opacity = "0.4";
-    } else {
-      redoBtn.style.opacity = "1";
-    }
-  }
-  /* Shape deletion */
-  private deleteSelectedShape(event: KeyboardEvent) {
+    /* Shape deletion */
     if (event.key === "Delete") {
       if (this.selectedShapeForDeletion.length > 0) {
         if (this.shapes.length === 1 && this.selectedShapeIndex === 0) {
@@ -482,16 +482,50 @@ export class Canvas {
         }
       }
     }
+    /* zoom in and zoom out */
+    if (event.ctrlKey) {
+      switch (event.key) {
+        case "+":
+        case "=":
+          this.zoomIn();
+          event.preventDefault();
+          break;
+        case "-":
+          this.zoomOut();
+          event.preventDefault();
+          break;
+      }
+    }
+  }
+
+  private activateRedoUndoBtn(undoStack: Shape[], redoStack: Shape[]) {
+    const undoBtn = document.querySelector("#undoBtn") as HTMLButtonElement;
+    const redoBtn = document.querySelector("#redoBtn") as HTMLButtonElement;
+    if (undoStack.length === 0) {
+      undoBtn.style.opacity = "0.4";
+    } else {
+      undoBtn.style.opacity = "1";
+    }
+    if (redoStack.length === 0) {
+      redoBtn.style.opacity = "0.4";
+    } else {
+      redoBtn.style.opacity = "1";
+    }
   }
 
   /*Display all shapes*/
   private displayAllShapes() {
     this.clearCanvas();
+    this.ctx.save();
+    this.ctx.translate(this.ctx.canvas.width / 2, this.ctx.canvas.height / 2);
+    this.ctx.scale(this.scale, this.scale);
+    this.ctx.translate(-this.ctx.canvas.width / 2, -this.ctx.canvas.height / 2);
     this.shapes.forEach((shape) => {
       if (shape) {
         shape.draw(this.ctx);
       }
     });
+    this.ctx.restore();
   }
 
   /*Change shapes colors*/
@@ -577,12 +611,54 @@ export class Canvas {
     strokeBtn.forEach((strokeBtn) => {
       strokeBtn.addEventListener("click", () => {
         const color = strokeBtn.getAttribute("data-color")!;
-        if(this.currentShape === SHAPES.DRAW){
+        if (this.currentShape === SHAPES.DRAW) {
           this.drawingColor = color;
         }
         this.updateSelectedShapeStrokeColor(color);
       });
     });
+  }
+
+  /*Zoom section */
+  private zoomIn() {
+    this.scale *= this.scaleFactor;
+    this.zoomPercentage += 10;
+    document.querySelector(
+      "#zoom__percentage"
+    )!.innerHTML = `${this.zoomPercentage}%`;
+    this.displayAllShapes();
+  }
+  private zoomOut() {
+    if (this.zoomPercentage > 10) {
+      this.scale /= this.scaleFactor;
+      this.zoomPercentage -= 10;
+      document.querySelector(
+        "#zoom__percentage"
+      )!.innerHTML = `${this.zoomPercentage}%`;
+      this.displayAllShapes();
+    }
+  }
+
+  /* Draw select shape highlighter  */
+  private selectShapeHighlighter(currentSelectedShape: Shape){
+    switch(currentSelectedShape.shapeType){
+      case SHAPES.RECTANGLE:
+        Rectangle.isSelected = true;
+        currentSelectedShape.drawOutline(this.ctx);
+        break;
+      case SHAPES.CIRCLE:
+        Circle.isSelected = true;
+        currentSelectedShape.drawOutline(this.ctx);
+        break;
+      case SHAPES.LINE:
+        Line.isSelected = true;
+        currentSelectedShape.drawOutline(this.ctx);
+        break;
+      case SHAPES.ARROW:
+        ArrowLine.isSelected = true;
+        currentSelectedShape.drawOutline(this.ctx);
+        break;
+    }
   }
 
   /* Side panel column */

@@ -1,9 +1,10 @@
-import { EDGE_DETECTION_WIDTH } from "../Constants/Constants";
-import { IPoint, SHAPES } from "../Utils/Common";
+import { EDGE_DETECTION_WIDTH, SELECTED_SHAPE_INDICATOR_CIRCLE_RADIUS } from "../Constants/Constants";
+import { IPoint, SHAPES, selectionIndicateCircle } from "../Utils/Common";
 import { Shape } from "./Shape";
 
 export class Line extends Shape {
   private end: IPoint;
+  static isSelected: boolean = false;
   fillColor: string;
   strokeColor: string;
   strokeWidth: number;
@@ -27,6 +28,14 @@ export class Line extends Shape {
     ctx.strokeStyle = this.strokeColor;
     ctx.stroke();
     ctx.restore();
+    if(Line.isSelected){
+      this.drawOutline(ctx);
+    }
+  }
+
+  drawOutline(ctx: CanvasRenderingContext2D): void {
+    selectionIndicateCircle(ctx, this.position, SELECTED_SHAPE_INDICATOR_CIRCLE_RADIUS);
+    selectionIndicateCircle(ctx, this.end, SELECTED_SHAPE_INDICATOR_CIRCLE_RADIUS);
   }
 
   isMouseWithinShape(point: IPoint): boolean {

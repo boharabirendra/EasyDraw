@@ -38,6 +38,8 @@ export class Text extends Shape {
   isMouseNearEdge(currentMousePosition: IPoint): string | boolean | null {
     return null;
   }
-   // @ts-ignore
+  // @ts-ignore
   reSize(...args: any): void {}
+  //@ts-ignore
+  drawOutline(ctx: CanvasRenderingContext2D): void {}
 }

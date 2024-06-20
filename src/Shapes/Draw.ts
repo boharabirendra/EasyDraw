@@ -53,4 +53,6 @@ export class Draw extends Shape {
   move(dx: number, dy: number): void {}
   // @ts-ignore
   reSize(...args: any): void {}
+  //@ts-ignore
+  drawOutline(ctx: CanvasRenderingContext2D): void {}
 }
