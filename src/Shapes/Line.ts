@@ -4,17 +4,29 @@ import { Shape } from "./Shape";
 
 export class Line extends Shape {
   private end: IPoint;
+  fillColor: string;
+  strokeColor: string;
+  strokeWidth: number;
 
-  constructor(start: IPoint, end: IPoint) {
+  constructor(start: IPoint, end: IPoint,fillColor = "transparent", strokeColor = "black", strokeWidth = 2) {
     super(start, SHAPES.LINE);
     this.end = end;
+    this.fillColor = fillColor;
+    this.strokeColor = strokeColor;
+    this.strokeWidth = strokeWidth;
   }
 
   draw(ctx: CanvasRenderingContext2D) {
+    ctx.save();
     ctx.beginPath();
     ctx.moveTo(this.position.posX, this.position.posY);
     ctx.lineTo(this.end.posX, this.end.posY);
+    ctx.fillStyle = this.fillColor;
+    ctx.fill();
+    ctx.lineWidth = this.strokeWidth;
+    ctx.strokeStyle = this.strokeColor;
     ctx.stroke();
+    ctx.restore();
   }
 
   isMouseWithinShape(point: IPoint): boolean {

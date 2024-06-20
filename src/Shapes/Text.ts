@@ -16,15 +16,15 @@ export class Text extends Shape {
   }
 
   draw(ctx: CanvasRenderingContext2D) {
-    ctx.fillText(this.text, this.position.posX, this.position.posY);
+    ctx.fillText(this.text, this.position.posX, this.position.posY + 34);
   }
 
   isMouseWithinShape(point: IPoint): boolean {
     return (
       point.posX >= this.boundingBox.x &&
       point.posX <= this.boundingBox.x + this.boundingBox.width &&
-      point.posY >= this.boundingBox.y &&
-      point.posY <= this.boundingBox.y + this.boundingBox.height
+      point.posY >= this.boundingBox.y + 34 &&
+      point.posY <= this.boundingBox.y + 34 + this.boundingBox.height
     );
   }
 

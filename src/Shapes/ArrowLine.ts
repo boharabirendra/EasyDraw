@@ -4,10 +4,16 @@ import { Shape } from "./Shape";
 
 export class ArrowLine extends Shape {
   private end: IPoint;
+  fillColor: string;
+  strokeColor: string;
+  strokeWidth: number;
 
-  constructor(start: IPoint, end: IPoint) {
+  constructor(start: IPoint, end: IPoint, fillColor = "transparent", strokeColor = "black", strokeWidth = 2) {
     super(start, SHAPES.ARROW);
     this.end = end;
+    this.fillColor = fillColor;
+    this.strokeColor = strokeColor;
+    this.strokeWidth = strokeWidth;
   }
 
   draw(ctx: CanvasRenderingContext2D) {
@@ -15,6 +21,7 @@ export class ArrowLine extends Shape {
     const dx = this.end.posX - this.position.posX;
     const dy = this.end.posY - this.position.posY;
     const angle = Math.atan2(dy, dx);
+    ctx.save();
     ctx.beginPath();
     ctx.moveTo(this.position.posX, this.position.posY);
     ctx.lineTo(this.end.posX, this.end.posY);
@@ -27,7 +34,12 @@ export class ArrowLine extends Shape {
       this.end.posX - headLength * Math.cos(angle + Math.PI / 6),
       this.end.posY - headLength * Math.sin(angle + Math.PI / 6)
     );
+    ctx.fillStyle = this.fillColor;
+    ctx.fill();
+    ctx.lineWidth = this.strokeWidth;
+    ctx.strokeStyle = this.strokeColor;
     ctx.stroke();
+    ctx.restore();
   }
 
   isMouseWithinShape(point: IPoint): boolean {

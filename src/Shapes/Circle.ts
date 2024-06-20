@@ -3,16 +3,22 @@ import { IPoint, SHAPES } from "../Utils/Common";
 import { Shape } from "./Shape";
 
 export class Circle extends Shape {
-  private radius: number;
+  radius: number;
+  fillColor: string;
+  strokeColor: string;
+  strokeWidth: number;
 
-  constructor(position: IPoint, radius: number) {
+  constructor(position: IPoint, radius: number, fillColor = "transparent", strokeColor = "black", strokeWidth = 2) {
     super(position, SHAPES.CIRCLE);
     this.radius = radius;
+    this.fillColor = fillColor;
+    this.strokeColor = strokeColor;
+    this.strokeWidth = strokeWidth;
   }
 
   draw(ctx: CanvasRenderingContext2D) {
+    ctx.save();
     ctx.beginPath();
-    ctx.fillStyle = "gray";
     ctx.arc(
       this.position.posX,
       this.position.posY,
@@ -20,8 +26,12 @@ export class Circle extends Shape {
       0,
       Math.PI * 2
     );
+    ctx.fillStyle = this.fillColor;
     ctx.fill();
+    ctx.lineWidth = this.strokeWidth;
+    ctx.strokeStyle = this.strokeColor;
     ctx.stroke();
+    ctx.restore();
   }
 
   isMouseWithinShape(point: IPoint): boolean {

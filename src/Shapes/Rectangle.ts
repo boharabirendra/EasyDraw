@@ -4,23 +4,33 @@ import { Shape } from "./Shape";
 
 export class Rectangle extends Shape {
   dimension: IDimension;
+  fillColor: string;
+  strokeColor: string;
+  strokeWidth: number;
 
-  constructor(position: IPoint, dimension: IDimension) {
+  constructor(position: IPoint, dimension: IDimension, fillColor = "transparent", strokeColor = "black", strokeWidth = 2) {
     super(position, SHAPES.RECTANGLE);
     this.dimension = dimension;
+    this.fillColor = fillColor;
+    this.strokeColor = strokeColor;
+    this.strokeWidth = strokeWidth;
   }
 
   draw(ctx: CanvasRenderingContext2D): void {
+    ctx.save();
     ctx.beginPath();
-    ctx.fillStyle = "green";
     ctx.rect(
       this.position.posX,
       this.position.posY,
       this.dimension.width,
       this.dimension.height
     );
+    ctx.fillStyle = this.fillColor;
     ctx.fill();
+    ctx.lineWidth = this.strokeWidth;
+    ctx.strokeStyle = this.strokeColor;
     ctx.stroke();
+    ctx.restore();
   }
 
   isMouseWithinShape(point: IPoint): boolean {

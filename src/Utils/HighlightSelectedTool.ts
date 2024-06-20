@@ -16,7 +16,7 @@ export function highlightCurrentSelectedTool(): void {
       removeBg();
       if (tool.id === "eraserBtn") {
         body.style.cursor =
-          "url(https://img.icons8.com/ios-glyphs/16/eraser.png), auto";
+          "url(./src/assets/Images/eraser.png), auto";
       } else if (tool.id === "clearBtn" || tool.id === "cursorBtn") {
         body.style.cursor = "default";
       } else {

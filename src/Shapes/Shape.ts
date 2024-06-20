@@ -3,11 +3,9 @@ import { IPoint, SHAPES } from '../Utils/Common';
 
 export abstract class Shape {
     protected position: IPoint;
-    public isSelected: boolean;
     public shapeType: SHAPES;
     constructor(position: IPoint, shapeType: SHAPES) {
         this.position = position;
-        this.isSelected = false;
         this.shapeType = shapeType;
     }
 

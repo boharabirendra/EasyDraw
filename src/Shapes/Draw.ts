@@ -3,39 +3,54 @@ import { Shape } from "./Shape";
 
 export class Draw extends Shape {
   path: IPoint[];
+  fillColor: string;
+  strokeColor: string;
+  strokeWidth: number;
 
-  constructor(start: IPoint) {
+  constructor(
+    start: IPoint,
+    strokeColor = "black",
+    fillColor = "transparent",
+    strokeWidth = 16
+  ) {
     super(start, SHAPES.DRAW);
     this.path = [start];
+    this.fillColor = fillColor;
+    this.strokeColor = strokeColor;
+    this.strokeWidth = strokeWidth;
   }
 
   addPoint(point: IPoint) {
     this.path.push(point);
   }
 
+  setStrokeColor(color: string) {
+    this.strokeColor = color;
+  }
+
   draw(ctx: CanvasRenderingContext2D): void {
     if (this.path.length < 2) return;
+    ctx.save();
     ctx.beginPath();
-    ctx.strokeStyle = "green";
-    ctx.lineWidth = 14;
     ctx.moveTo(this.path[0].posX, this.path[0].posY);
     for (let i = 1; i < this.path.length; i++) {
       ctx.lineTo(this.path[i].posX, this.path[i].posY);
     }
+    ctx.lineWidth = this.strokeWidth;
+    ctx.strokeStyle = this.strokeColor;
     ctx.stroke();
-    ctx.strokeStyle = "black";
-    ctx.lineWidth = 2;
+    ctx.restore();
   }
-   // @ts-ignore
+  // @ts-ignore
   isMouseWithinShape(currentMousePosition: IPoint): boolean {
     return false;
   }
-   // @ts-ignore
+  // @ts-ignore
   isMouseNearEdge(currentMousePosition: IPoint): string | boolean | null {
     return null;
   }
-   // @ts-ignore
+  // @ts-ignore
   move(dx: number, dy: number): void {}
-   // @ts-ignore
+  // @ts-ignore
   reSize(...args: any): void {}
 }

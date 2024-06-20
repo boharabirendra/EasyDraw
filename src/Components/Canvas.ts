@@ -19,6 +19,8 @@ export class Canvas {
   private shapes: Shape[] = [];
   private isDrawing: boolean = false;
   private isDragging: boolean = false;
+  private currentEraser?: Eraser;
+  private isErasing: boolean = false;
   private dragStartPosition: IPoint = { posX: 0, posY: 0 };
   private startPosition: IPoint = { posX: 0, posY: 0 };
   private startResizingPosition: IPoint = { posX: 0, posY: 0 };
@@ -28,6 +30,12 @@ export class Canvas {
   private isResizing: boolean = false;
   private redoStack: Shape[] = [];
   private currentDrawing?: Draw;
+  private isUndoStart: boolean = false;
+  private sizeOfShapesAtUndoStart: number = 0;
+  private selectedShapeForDeletion: { index: number; shape: Shape }[] = [];
+  private selectedShapeIndex: number | null = null;
+  private toBeColorChangeShape: Shape | undefined = undefined;
+  private drawingColor: string = "black";
 
   constructor() {
     this.canvas = document.createElement("canvas");
@@ -39,6 +47,7 @@ export class Canvas {
 
     this.init();
     highlightCurrentSelectedTool();
+    this.changeShapeColor();
 
     /* Redo & Undo Events*/
     document
@@ -49,6 +58,7 @@ export class Canvas {
       ?.addEventListener("click", this.redo.bind(this));
     document.addEventListener("keydown", this.undoUsingKeyboard.bind(this));
     document.addEventListener("keydown", this.redoUsingKeyboard.bind(this));
+    document.addEventListener("keydown", this.deleteSelectedShape.bind(this));
     this.activateRedoUndoBtn(this.shapes, this.redoStack);
   }
 
@@ -59,24 +69,30 @@ export class Canvas {
 
     document.getElementById("cursorBtn")?.addEventListener("click", () => {
       this.currentShape = SHAPES.CURSOR;
+      this.isErasing = false;
     });
     document.getElementById("rectangleBtn")?.addEventListener("click", () => {
       this.currentShape = SHAPES.RECTANGLE;
+      this.isErasing = false;
     });
     document.getElementById("circleBtn")?.addEventListener("click", () => {
       this.currentShape = SHAPES.CIRCLE;
+      this.isErasing = false;
     });
     document.getElementById("lineBtn")?.addEventListener("click", () => {
       this.currentShape = SHAPES.LINE;
+      this.isErasing = false;
     });
     document.getElementById("arrowBtn")?.addEventListener("click", () => {
       this.currentShape = SHAPES.ARROW;
     });
     document.getElementById("drawBtn")?.addEventListener("click", () => {
       this.currentShape = SHAPES.DRAW;
+      this.isErasing = false;
     });
     document.getElementById("textBtn")?.addEventListener("click", () => {
       this.currentShape = SHAPES.TEXT;
+      this.isErasing = false;
     });
     document.getElementById("eraserBtn")?.addEventListener("click", () => {
       this.currentShape = SHAPES.ERASER;
@@ -86,16 +102,25 @@ export class Canvas {
       this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
       this.currentShape = SHAPES.CURSOR;
       adjustToolSection();
+      this.isErasing = false;
     });
   }
 
   onMouseDown(event: MouseEvent) {
     const currentMousePosition = this.getMousePosition(event);
     if (this.currentShape === SHAPES.CURSOR) {
-      this.selectedShape = this.shapes.find((shape) =>
-        shape.isMouseWithinShape(currentMousePosition)
-      );
+      this.selectedShape = this.shapes.find((shape, index) => {
+        if (shape) {
+          this.selectedShapeIndex = index;
+          return shape.isMouseWithinShape(currentMousePosition);
+        }
+      });
+      this.toBeColorChangeShape = this.selectedShape;
       if (this.selectedShape) {
+        this.selectedShapeForDeletion.push({
+          index: this.selectedShapeIndex!,
+          shape: this.selectedShape,
+        });
         this.resizeEdge =
           this.selectedShape.isMouseNearEdge(currentMousePosition);
         if (this.resizeEdge) {
@@ -108,9 +133,10 @@ export class Canvas {
       }
     } else if (this.currentShape === SHAPES.DRAW) {
       this.isDrawing = true;
-      this.currentDrawing = new Draw(currentMousePosition);
-      body.style.cursor = "crosshair";
-      this.shapes.push(this.currentDrawing);
+      this.currentDrawing = new Draw(currentMousePosition, this.drawingColor);
+    } else if (this.currentShape === SHAPES.ERASER) {
+      this.isErasing = true;
+      this.currentEraser = new Eraser(currentMousePosition);
     } else {
       this.isDrawing = true;
       this.startPosition = currentMousePosition;
@@ -119,17 +145,39 @@ export class Canvas {
 
   onMouseMove(event: MouseEvent) {
     const position = this.getMousePosition(event);
+    /* Changing mouse shape */
+    if (this.currentShape === SHAPES.CURSOR) {
+      const tempSelectedShape = this.shapes.find((shape) => {
+        if (shape) {
+          return shape.isMouseWithinShape(position);
+        }
+      });
+      if (tempSelectedShape) {
+        body.style.cursor = "move";
+        const currentMousePosition = this.getMousePosition(event);
+        const edge = tempSelectedShape.isMouseNearEdge(currentMousePosition);
+        if (edge) {
+          const cursorStyle =
+            edge === "left" || edge === "right" ? "ew-resize" : "ns-resize";
+          body.style.cursor = cursorStyle;
+        }
+      } else {
+        body.style.cursor = "default";
+      }
+    }
     if (this.isDragging && this.selectedShape) {
       const dx = position.posX - this.dragStartPosition.posX;
       const dy = position.posY - this.dragStartPosition.posY;
       this.selectedShape.move(dx, dy);
-      /* Store previous mouse */
-      this.dragStartPosition = position;
-      this.clearCanvas();
-      this.shapes.forEach((shape) => shape.draw(this.ctx));
+      this.dragStartPosition = position; /* Store previous mouse position */
+      this.displayAllShapes();
+    } else if (this.isErasing) {
+      if (this.currentEraser) {
+        this.currentEraser.addPoint(position);
+        this.currentEraser.draw(this.ctx);
+      }
     } else if (this.isDrawing) {
-      this.clearCanvas();
-      this.shapes.forEach((shape) => shape.draw(this.ctx));
+      this.displayAllShapes();
       switch (this.currentShape) {
         case SHAPES.RECTANGLE:
           this.drawRectangle(position);
@@ -145,18 +193,12 @@ export class Canvas {
           break;
         case SHAPES.DRAW:
           if (this.currentDrawing) {
-            body.style.cursor = "crosshair";
             this.currentDrawing.addPoint(position);
             this.currentDrawing.draw(this.ctx);
           }
           break;
         case SHAPES.TEXT:
           this.drawText(position);
-          break;
-        case SHAPES.ERASER:
-          this.erase(position);
-          break;
-        default:
           break;
       }
     } else if (this.isResizing) {
@@ -166,39 +208,24 @@ export class Canvas {
         case SHAPES.RECTANGLE:
           this.selectedShape?.reSize(this.resizeEdge, dx, dy);
           this.startResizingPosition = position;
-          this.clearCanvas();
-          this.shapes.forEach((shape) => shape.draw(this.ctx));
+          this.displayAllShapes();
           break;
         case SHAPES.CIRCLE:
           this.selectedShape?.reSize(position);
           this.startResizingPosition = position;
-          this.clearCanvas();
-          this.shapes.forEach((shape) => shape.draw(this.ctx));
+          this.displayAllShapes();
           break;
         case SHAPES.LINE:
           this.selectedShape?.reSize(this.resizeEdge, position);
           this.startResizingPosition = position;
-          this.clearCanvas();
-          this.shapes.forEach((shape) => shape.draw(this.ctx));
+          this.displayAllShapes();
           break;
         case SHAPES.ARROW:
           this.selectedShape?.reSize(this.resizeEdge, position);
           this.startResizingPosition = position;
-          this.clearCanvas();
-          this.shapes.forEach((shape) => shape.draw(this.ctx));
+          this.displayAllShapes();
           break;
       }
-    } else {
-      let cursorStyle = "default";
-      this.shapes.forEach((shape) => {
-        const currentMousePosition = this.getMousePosition(event);
-        const edge = shape.isMouseNearEdge(currentMousePosition);
-        if (edge) {
-          cursorStyle =
-            edge === "left" || edge === "right" ? "ew-resize" : "ns-resize";
-        }
-      });
-      body.style.cursor = cursorStyle;
     }
     this.activateRedoUndoBtn(this.shapes, this.redoStack);
   }
@@ -231,18 +258,24 @@ export class Canvas {
           adjustToolSection();
           this.currentShape = SHAPES.CURSOR;
           break;
+        case SHAPES.DRAW:
+          if (this.currentDrawing) {
+            this.shapes.push(this.currentDrawing);
+          }
+          break;
         case SHAPES.TEXT:
           this.drawText(position);
           adjustToolSection();
           this.currentShape = SHAPES.CURSOR;
           break;
-        case SHAPES.ERASER:
-          this.erase(position, true);
-          break;
       }
     } else if (this.isResizing) {
       this.isResizing = false;
       this.resizeEdge = null;
+    }
+    /* Clear redo stack if shapes added after undo */
+    if (this.shapes.length > this.sizeOfShapesAtUndoStart) {
+      this.redoStack = [];
     }
   }
 
@@ -340,6 +373,7 @@ export class Canvas {
     input.style.fontSize = "24px";
     input.style.left = `${position.posX}px`;
     input.style.top = `${position.posY}px`;
+    input.style.maxWidth = "50rem";
 
     document.body.appendChild(input);
     input.focus();
@@ -377,28 +411,7 @@ export class Canvas {
       }
     });
     function resizeInput() {
-      input.style.width = `${Math.max(20, input.value.length * 1.2)}ch`;
-    }
-  }
-
-  /* Eraser section */
-  private erase(position: IPoint, finalize: boolean = false) {
-    const width = position.posX - this.startPosition.posX;
-    const height = position.posY - this.startPosition.posY;
-    if (finalize) {
-      const newEraser = new Eraser(
-        { posX: this.startPosition.posX, posY: this.startPosition.posY },
-        { posX: position.posX, posY: position.posY }
-      );
-      this.shapes.push(newEraser);
-      newEraser.draw(this.ctx);
-    } else {
-      this.ctx.clearRect(
-        this.startPosition.posX,
-        this.startPosition.posY,
-        width,
-        height
-      );
+      input.style.width = `${input.value.length + 1}ch`;
     }
   }
 
@@ -406,12 +419,13 @@ export class Canvas {
   private undo() {
     if (this.shapes.length > 0) {
       const lastMomento = this.shapes.pop();
+      this.isUndoStart = true;
       if (lastMomento) {
         this.redoStack.push(lastMomento);
-        this.clearCanvas();
-        this.shapes.forEach((shape) => {
-          shape.draw(this.ctx);
-        });
+        this.displayAllShapes();
+      }
+      if (this.isUndoStart) {
+        this.sizeOfShapesAtUndoStart = this.shapes.length;
       }
     }
   }
@@ -420,10 +434,7 @@ export class Canvas {
       const lastMomento = this.redoStack.pop();
       if (lastMomento) {
         this.shapes.push(lastMomento);
-        this.clearCanvas();
-        this.shapes.forEach((shape) => {
-          shape.draw(this.ctx);
-        });
+        this.displayAllShapes();
       }
     }
   }
@@ -439,7 +450,6 @@ export class Canvas {
       this.redo();
     }
   }
-
   private activateRedoUndoBtn(undoStack: Shape[], redoStack: Shape[]) {
     const undoBtn = document.querySelector("#undoBtn") as HTMLButtonElement;
     const redoBtn = document.querySelector("#redoBtn") as HTMLButtonElement;
@@ -454,4 +464,126 @@ export class Canvas {
       redoBtn.style.opacity = "1";
     }
   }
+  /* Shape deletion */
+  private deleteSelectedShape(event: KeyboardEvent) {
+    if (event.key === "Delete") {
+      if (this.selectedShapeForDeletion.length > 0) {
+        if (this.shapes.length === 1 && this.selectedShapeIndex === 0) {
+          this.clearCanvas();
+        } else {
+          for (
+            let i = this.selectedShapeIndex!;
+            i <= this.shapes.length - 1;
+            i++
+          ) {
+            this.shapes[i] = this.shapes[i + 1];
+          }
+          this.displayAllShapes();
+        }
+      }
+    }
+  }
+
+  /*Display all shapes*/
+  private displayAllShapes() {
+    this.clearCanvas();
+    this.shapes.forEach((shape) => {
+      if (shape) {
+        shape.draw(this.ctx);
+      }
+    });
+  }
+
+  /*Change shapes colors*/
+  private updateSelectedShapeFillColor(color: string) {
+    if (
+      this.toBeColorChangeShape &&
+      this.toBeColorChangeShape.shapeType === SHAPES.CIRCLE &&
+      this.toBeColorChangeShape instanceof Circle
+    ) {
+      this.toBeColorChangeShape.fillColor = color;
+      this.displayAllShapes();
+    }
+    if (
+      this.toBeColorChangeShape &&
+      this.toBeColorChangeShape.shapeType === SHAPES.RECTANGLE &&
+      this.toBeColorChangeShape instanceof Rectangle
+    ) {
+      this.toBeColorChangeShape.fillColor = color;
+      this.displayAllShapes();
+    }
+  }
+  private updateSelectedShapeStrokeColor(color: string) {
+    if (
+      this.toBeColorChangeShape &&
+      this.toBeColorChangeShape.shapeType === SHAPES.CIRCLE &&
+      this.toBeColorChangeShape instanceof Circle
+    ) {
+      this.toBeColorChangeShape.strokeColor = color;
+      this.displayAllShapes();
+    }
+    if (
+      this.toBeColorChangeShape &&
+      this.toBeColorChangeShape.shapeType === SHAPES.RECTANGLE &&
+      this.toBeColorChangeShape instanceof Rectangle
+    ) {
+      this.toBeColorChangeShape.strokeColor = color;
+      this.displayAllShapes();
+    }
+    if (
+      this.toBeColorChangeShape &&
+      this.toBeColorChangeShape.shapeType === SHAPES.LINE &&
+      this.toBeColorChangeShape instanceof Line
+    ) {
+      this.toBeColorChangeShape.strokeColor = color;
+      this.displayAllShapes();
+    }
+    if (
+      this.toBeColorChangeShape &&
+      this.toBeColorChangeShape.shapeType === SHAPES.ARROW &&
+      this.toBeColorChangeShape instanceof ArrowLine
+    ) {
+      this.toBeColorChangeShape.strokeColor = color;
+      this.displayAllShapes();
+    }
+    if (
+      this.toBeColorChangeShape &&
+      this.toBeColorChangeShape.shapeType === SHAPES.DRAW &&
+      this.toBeColorChangeShape instanceof Draw
+    ) {
+      this.toBeColorChangeShape.strokeColor = color;
+      this.displayAllShapes();
+    }
+  }
+
+  private changeShapeColor() {
+    const backgroundColorContainer = document.querySelector(
+      ".background__color__container"
+    ) as HTMLDivElement;
+    const colorsBtn: NodeListOf<HTMLButtonElement> =
+      backgroundColorContainer.querySelectorAll("button");
+    colorsBtn.forEach((colorBtn) => {
+      colorBtn.addEventListener("click", () => {
+        const color = colorBtn.getAttribute("data-color")!;
+        this.updateSelectedShapeFillColor(color);
+      });
+    });
+
+    const strokeColorContainer = document.querySelector(
+      ".stroke__color__container"
+    ) as HTMLDivElement;
+    const strokeBtn: NodeListOf<HTMLButtonElement> =
+      strokeColorContainer.querySelectorAll("button");
+    strokeBtn.forEach((strokeBtn) => {
+      strokeBtn.addEventListener("click", () => {
+        const color = strokeBtn.getAttribute("data-color")!;
+        if(this.currentShape === SHAPES.DRAW){
+          this.drawingColor = color;
+        }
+        this.updateSelectedShapeStrokeColor(color);
+      });
+    });
+  }
+
+  /* Side panel column */
 }

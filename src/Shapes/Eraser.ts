@@ -2,20 +2,29 @@ import { IPoint, SHAPES } from "../Utils/Common";
 import { Shape } from "./Shape";
 
 export class Eraser extends Shape {
-  private end: IPoint;
+  path: IPoint[];
 
-  constructor(start: IPoint, end: IPoint) {
+  constructor(start: IPoint) {
     super(start, SHAPES.ERASER);
-    this.end = end;
+    this.path = [start];
   }
 
-  draw(ctx: CanvasRenderingContext2D) {
-    ctx.clearRect(
-      this.position.posX,
-      this.position.posY,
-      this.end.posX - this.position.posX,
-      this.end.posY - this.position.posY
-    );
+  addPoint(point: IPoint) {
+    this.path.push(point);
+  }
+
+  draw(ctx: CanvasRenderingContext2D): void {
+    if (this.path.length < 2) return
+    ctx.save();
+    ctx.beginPath();
+    ctx.strokeStyle = "white";
+    ctx.lineWidth = 14;
+    ctx.moveTo(this.path[0].posX, this.path[0].posY);
+    for (let i = 1; i < this.path.length; i++) {
+      ctx.lineTo(this.path[i].posX, this.path[i].posY);
+    }
+    ctx.stroke();
+    ctx.restore();
   }
    // @ts-ignore
   isMouseNearEdge(currentMousePosition: IPoint): string | boolean | null {

@@ -61,16 +61,93 @@
       </div>
     </div>
     <div class="left_bottom_container">
-      <div class="zoom"></div>
+      <div class="zoom">
+        <button class="zoom__out" title="Zoom out"><img src="./src/assets/Images/minus.png" alt="zoom" /></button>
+        <button class="zoom__percentage" title="Reset zoom">100%</button>
+        <button class="zoom__in" title="Zoom in"><img src="./src/assets/Images/plus.png" alt="Undo" /></button>
+      </div>
       <div class="redo_undo">
-        <button id="undoBtn">
+        <button id="undoBtn" title="Undo">
           <img src="./src/assets/Images/undo.png" alt="Undo" />
         </button>
-        <button id="redoBtn">
+        <button id="redoBtn" title="Redo">
           <img src="./src/assets/Images/redo.png" alt="Redo" />
         </button>
       </div>
     </div>
+    <div class="panelColumn">
+      <div>
+        <h3>Stoke</h3>
+        <div class="color-picker__top-picks stroke__color__container">
+          <button
+            class="color-picker__button"
+            style="background-color: #1e1e1e"
+            title="#1e1e1e"
+            data-color="#1e1e1e"
+          ></button>
+          <button
+            class="color-picker__button"
+            style="background-color: #e03131"
+            title="#e03131"
+            data-color="#e03131"
+          ></button>
+          <button
+            class="color-picker__button"
+            style="background-color: #2f9e44"
+            title="#2f9e44"
+            data-color="#2f9e44"
+          ></button>
+          <button
+            class="color-picker__button"
+            style="background-color: #1971c2"
+            title="#1971c2"
+            data-color="#1971c2"
+          ></button>
+          <button
+            class="color-picker__button"
+            style="background-color: #f08c00"
+            title="#f08c00"
+            data-color="#f08c00"
+          ></button>
+        </div>
+      </div>
+      <div>
+        <h3>Background</h3>
+        <div class="color-picker__top-picks background__color__container">
+          <button
+            class="color-picker__button"
+            style="background-color: transparent"
+            title="transparent"
+            data-color="transparent"
+          ></button>
+          <button
+            class="color-picker__button"
+            style="background-color: #ffc9c9"
+            title="#ffc9c9"
+            data-color="#ffc9c9"
+          ></button>
+          <button
+            class="color-picker__button"
+            style="background-color: #b2f2bb"
+            title="#b2f2bb"
+            data-color="#b2f2bb"
+          ></button>
+          <button
+            class="color-picker__button"
+            style="background-color: #a5d8ff"
+            title="#a5d8ff"
+            data-color="#a5d8ff"
+          ></button>
+          <button
+            class="color-picker__button"
+            style="background-color: #ffec99"
+            title="#ffec99"
+            data-color="#ffec99"
+          ></button>
+        </div>
+      </div>
+    </div>
+
     <div id="app"></div>
     <script type="module" src="/src/main.ts"></script>
   </body>
