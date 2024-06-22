@@ -22,6 +22,7 @@ body {
     0px 0px 3.1270833015441895px 0px rgba(0, 0, 0, 0.08),
     0px 7px 14px 0px rgba(0, 0, 0, 0.05);
   border-radius: 10px;
+  background-color: white;
 }
 
 .toolbar_icon button {
@@ -40,7 +41,7 @@ body {
   transition: background-color 0.3s ease;
 }
 
-.left_bottom_container{
+.left_bottom_container {
   display: flex;
   gap: 15px;
   position: absolute;
@@ -48,10 +49,9 @@ body {
   left: 2%;
   padding: 6px 10px;
   cursor: pointer;
-  
 }
 
-.zoom{
+.zoom {
   background-color: #ececf4;
   padding: 8px 10px;
   border-radius: 5px;
@@ -61,7 +61,6 @@ body {
   justify-content: center;
 }
 
-
 .redo_undo {
   display: flex;
   gap: 15px;
@@ -70,15 +69,20 @@ body {
   border-radius: 5px;
 }
 
-.zoom__out, .zoom__in, .zoom__percentage{
+.zoom__out,
+.zoom__in,
+.zoom__percentage {
   opacity: 0.5;
   cursor: pointer;
 }
-.zoom__percentage{
+.zoom__percentage {
   padding-bottom: 3px;
 }
 
-.redo_undo button, .zoom__out, .zoom__in, .zoom__percentage {
+.redo_undo button,
+.zoom__out,
+.zoom__in,
+.zoom__percentage {
   border: none;
   background-color: transparent;
 }
@@ -87,7 +91,6 @@ body {
   width: 16px;
   cursor: pointer;
 }
-
 
 .panelColumn {
   position: absolute;
@@ -102,8 +105,9 @@ body {
   border-radius: 0.5rem;
   top: 12%;
   left: 2%;
-  width: 160px;
+  width: 170px;
   cursor: default;
+  background-color: white;
 }
 
 .panelColumn h3 {
@@ -122,3 +126,44 @@ body {
   cursor: pointer;
   border: 1px solid #d6d6d6;
 }
+
+.stroke__width button {
+  padding: 0.75rem;
+  border-radius: 0.25rem;
+  background-color: "#EFEFEF";
+  border: none;
+  cursor: pointer;
+}
+.stroke__width{
+  margin-bottom: 0.3rem;
+}
+
+.stroke__style button, .layer__container button, .actions button{
+  padding: 0.3rem 0.5rem;
+  border-radius: 0.25rem;
+  background-color: "#EFEFEF";
+  border: none;
+  cursor: pointer;
+}
+
+.thin div {
+  height: 2px;
+  width: 10px;
+  background-color: gray;
+  border-radius: 4px;
+}
+.bold div {
+  height: 3px;
+  width: 10px;
+  background-color: rgb(114, 114, 114);
+  border-radius: 4px;
+}
+.extra__bold div {
+  height: 4px;
+  width: 10px;
+  background-color: rgb(37, 36, 36);
+  border-radius: 4px;
+}
+
+
+

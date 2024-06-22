@@ -10,8 +10,8 @@ export class Draw extends Shape {
   constructor(
     start: IPoint,
     strokeColor = "black",
-    fillColor = "transparent",
-    strokeWidth = 16
+    strokeWidth = 16,
+    fillColor = "transparent"
   ) {
     super(start, SHAPES.DRAW);
     this.path = [start];
@@ -55,4 +55,6 @@ export class Draw extends Shape {
   reSize(...args: any): void {}
   //@ts-ignore
   drawOutline(ctx: CanvasRenderingContext2D): void {}
+  //@ts-ignore
+  setIsSelected(value: boolean): void {}
 }

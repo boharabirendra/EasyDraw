@@ -44,8 +44,8 @@ export function selectionIndicateCircle(
 }
 
 export function getLeftTopCircleCenter(position: IPoint): IPoint {
-  const posX = position.posX - 3;
-  const posY = position.posY - 3;
+  const posX = position.posX ;
+  const posY = position.posY;
   return { posX, posY };
 }
 
@@ -53,8 +53,8 @@ export function getLeftBottomCircleCenter(
   position: IPoint,
   dimension: IDimension
 ): IPoint {
-  const posX = position.posX - 3;
-  const posY = position.posY + dimension.height + 3;
+  const posX = position.posX;
+  const posY = position.posY + dimension.height;
   return { posX, posY };
 }
 
@@ -62,8 +62,8 @@ export function getRightTopCircleCenter(
   position: IPoint,
   dimension: IDimension
 ): IPoint {
-  const posX = position.posX + dimension.width + 3;
-  const posY = position.posY - 3;
+  const posX = position.posX + dimension.width;
+  const posY = position.posY;
   return { posX, posY };
 }
 
@@ -71,7 +71,23 @@ export function getRightBottomCircleCenter(
   position: IPoint,
   dimension: IDimension
 ): IPoint {
-  const posX = position.posX + dimension.width + 3;
-  const posY = position.posY + dimension.height + 3;
+  const posX = position.posX + dimension.width;
+  const posY = position.posY + dimension.height;
   return { posX, posY };
 }
+
+export function selectionIndicateRectangle(
+  ctx: CanvasRenderingContext2D,
+  position: IPoint,
+  dimension: IDimension
+) {
+  ctx.save();
+  ctx.beginPath();
+  ctx.rect(position.posX, position.posY, dimension.width, dimension.height); 
+  ctx.strokeStyle = "gray";
+  ctx.fillStyle = "transparent";
+  ctx.fill(); // Fill with transparent color (no visible effect)
+  ctx.stroke(); // Stroke with gray color
+  ctx.restore();
+}
+

@@ -40,4 +40,6 @@ export class Eraser extends Shape {
   move(dx: number, dy: number): void {}
   //@ts-ignore
   drawOutline(ctx: CanvasRenderingContext2D): void {}
+  //@ts-ignore
+  setIsSelected(value: boolean): void {}
 }

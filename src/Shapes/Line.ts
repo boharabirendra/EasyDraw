@@ -1,20 +1,32 @@
-import { EDGE_DETECTION_WIDTH, SELECTED_SHAPE_INDICATOR_CIRCLE_RADIUS } from "../Constants/Constants";
+import {
+  EDGE_DETECTION_WIDTH,
+  SELECTED_SHAPE_INDICATOR_CIRCLE_RADIUS,
+} from "../Constants/Constants";
 import { IPoint, SHAPES, selectionIndicateCircle } from "../Utils/Common";
 import { Shape } from "./Shape";
 
 export class Line extends Shape {
   private end: IPoint;
-  static isSelected: boolean = false;
+  isSelected: boolean = false;
   fillColor: string;
   strokeColor: string;
   strokeWidth: number;
+  strokeStyle: number[];
 
-  constructor(start: IPoint, end: IPoint,fillColor = "transparent", strokeColor = "black", strokeWidth = 2) {
+  constructor(
+    start: IPoint,
+    end: IPoint,
+    fillColor = "transparent",
+    strokeColor = "black",
+    strokeWidth = 2,
+    strokeStyle = []
+  ) {
     super(start, SHAPES.LINE);
     this.end = end;
     this.fillColor = fillColor;
     this.strokeColor = strokeColor;
     this.strokeWidth = strokeWidth;
+    this.strokeStyle = strokeStyle;
   }
 
   draw(ctx: CanvasRenderingContext2D) {
@@ -25,17 +37,30 @@ export class Line extends Shape {
     ctx.fillStyle = this.fillColor;
     ctx.fill();
     ctx.lineWidth = this.strokeWidth;
+    ctx.setLineDash(this.strokeStyle);
     ctx.strokeStyle = this.strokeColor;
     ctx.stroke();
     ctx.restore();
-    if(Line.isSelected){
+    if (this.isSelected) {
       this.drawOutline(ctx);
     }
   }
 
+  setIsSelected(value: boolean): void {
+    this.isSelected = value;
+  }
+
   drawOutline(ctx: CanvasRenderingContext2D): void {
-    selectionIndicateCircle(ctx, this.position, SELECTED_SHAPE_INDICATOR_CIRCLE_RADIUS);
-    selectionIndicateCircle(ctx, this.end, SELECTED_SHAPE_INDICATOR_CIRCLE_RADIUS);
+    selectionIndicateCircle(
+      ctx,
+      this.position,
+      SELECTED_SHAPE_INDICATOR_CIRCLE_RADIUS
+    );
+    selectionIndicateCircle(
+      ctx,
+      this.end,
+      SELECTED_SHAPE_INDICATOR_CIRCLE_RADIUS
+    );
   }
 
   isMouseWithinShape(point: IPoint): boolean {
@@ -107,7 +132,7 @@ export class Line extends Shape {
 
   reSize(...args: any[]): void {
     const [edge, currentMousePosition] = args;
-   
+
     switch (edge) {
       case "start":
         const dx = currentMousePosition.posX - this.position.posX;
