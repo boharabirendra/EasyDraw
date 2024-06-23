@@ -19,7 +19,7 @@ export class ArrowLine extends Shape {
     fillColor = "transparent",
     strokeColor = "black",
     strokeWidth = 2,
-    strokeStyle =[],
+    strokeStyle: number[] =[],
   ) {
     super(start, SHAPES.ARROW);
     this.end = end;
@@ -192,5 +192,22 @@ export class ArrowLine extends Shape {
         this.end.posY += edy;
         break;
     }
+  }
+  static generateArrowLine(
+    start: IPoint,
+    end: IPoint,
+    fillColor: string,
+    strokeColor: string,
+    strokeWidth: number,
+    strokeStyle: number[]
+  ) {
+    return new ArrowLine(
+      start,
+      end,
+      fillColor,
+      strokeColor,
+      strokeWidth,
+      strokeStyle
+    );
   }
 }

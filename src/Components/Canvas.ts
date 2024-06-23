@@ -39,6 +39,7 @@ export class Canvas {
   private resizeEdge: string | null | boolean = null;
   private isResizing: boolean = false;
   private redoStack: Shape[] = [];
+  private undoStack: Shape[] = [];
   private currentDrawing?: Draw;
   private isUndoStart: boolean = false;
   private sizeOfShapesAtUndoStart: number = 0;
@@ -46,12 +47,17 @@ export class Canvas {
   private selectedShapeIndex: number | null = null;
   private toBeChangeShape: Shape | undefined = undefined;
   private drawingColor: string = "black";
-  private drawingWith: number = THIN_LINE_WIDTH;
+  private drawingWidth: number = THIN_LINE_WIDTH;
   private scale: number = 1;
   private scaleFactor: number = 1.1;
   private zoomPercentage: number = 100;
   private zoomPercentageEl: HTMLButtonElement | null = null;
   private previouslySelectedShape: Shape | null = null;
+  private isShowingSidePanel: boolean = false;
+  private selectedStrokeColor: string = "";
+  private selectedBackgroundColor: string = "transparent";
+  private selectedWidthSize: number = THIN_LINE_WIDTH;
+  private selectedWidthStyle: number[] = [];
 
   constructor() {
     this.canvas = document.createElement("canvas");
@@ -71,10 +77,6 @@ export class Canvas {
     this.canvas.addEventListener("mousemove", this.onMouseMove.bind(this));
     this.canvas.addEventListener("mouseup", this.onMouseUp.bind(this));
 
-    this.canvas.addEventListener("touchstart", this.onTouchStart.bind(this));
-    this.canvas.addEventListener("touchmove", this.onTouchMove.bind(this));
-    this.canvas.addEventListener("touchend", this.onTouchEnd.bind(this));
-
     /* Tool bar selection */
     document
       .querySelector("#toolbar_container")
@@ -85,6 +87,11 @@ export class Canvas {
           if (shape) {
             this.currentShape = SHAPES[shape as keyof typeof SHAPES];
             this.isErasing = shape === "ERASER";
+            if (this.currentShape !== SHAPES.CURSOR) {
+              this.isShowingSidePanel = true;
+            } else {
+              this.isShowingSidePanel = false;
+            }
           }
           if (button.id === "clearBtn") {
             this.shapes = [];
@@ -102,11 +109,21 @@ export class Canvas {
       ?.querySelectorAll("button")
       .forEach((button) => {
         button.addEventListener("click", () => {
+          button.style.transition = "0.3s";
           if (button.id === "undoBtn") {
+            button.style.border = "1px solid blue";
+            button.style.borderTopLeftRadius = "5px";
+            button.style.borderBottomLeftRadius = "5px";
             this.undo();
           } else if (button.id === "redoBtn") {
+            button.style.border = "1px solid blue";
+            button.style.borderTopRightRadius = "5px";
+            button.style.borderBottomRightRadius = "5px";
             this.redo();
           }
+          setTimeout(()=>{
+            button.style.border = "none";
+          }, 700);
         });
       });
 
@@ -115,9 +132,16 @@ export class Canvas {
       ?.querySelectorAll("button")
       .forEach((button) => {
         button.addEventListener("click", () => {
+          button.style.transition = "0.3s";
           if (button.id === "zoom__out") {
+            button.style.border = "1px solid blue";
+            button.style.borderTopLeftRadius = "5px";
+            button.style.borderBottomLeftRadius = "5px";
             this.zoomOut();
           } else if (button.id === "zoom__in") {
+            button.style.border = "1px solid blue";
+            button.style.borderTopRightRadius = "5px";
+            button.style.borderBottomRightRadius = "5px";
             this.zoomIn();
           } else if (button.id === "zoom__percentage") {
             this.scale = 1;
@@ -125,8 +149,22 @@ export class Canvas {
             this.zoomPercentageEl!.innerHTML = `${this.zoomPercentage}%`;
             this.displayAllShapes();
           }
+          setTimeout(()=>{
+            button.style.border = "none";
+          }, 700);
         });
       });
+
+    document.addEventListener("click", this.sidePanelHandler.bind(this));
+    const deleteBtn = document.querySelector("#deleteBtn") as HTMLButtonElement;
+    deleteBtn.addEventListener("click", ()=>{
+      this.deleteSelectedShapes();
+      deleteBtn.style.backgroundColor = "rgb(216, 216, 216)";
+      deleteBtn.style.transition = "0.3s";
+      setTimeout(()=>{
+        deleteBtn.style.backgroundColor = "#EFEFEF";
+      }, 700);
+    });
 
     document.addEventListener("keydown", this.keyboardActions.bind(this));
     this.zoomPercentageEl!.innerHTML = `${this.zoomPercentage}%`;
@@ -138,47 +176,12 @@ export class Canvas {
     this.layerManager();
   }
 
-  // Touch start event handler
-private onTouchStart(event: TouchEvent) {
-  event.preventDefault(); // Prevent default touch behavior
-  if (event.touches.length === 1) {
-    // Single touch - simulate mouse down
-    const touch = event.touches[0];
-    this.onMouseDown({
-      clientX: touch.clientX,
-      clientY: touch.clientY,
-      preventDefault: () => {},
-    } as MouseEvent);
-  } 
-}
-
-// Touch move event handler
-private onTouchMove(event: TouchEvent) {
-  event.preventDefault(); // Prevent default touch behavior
-  if (event.touches.length === 1) {
-    // Single touch - simulate mouse move
-    const touch = event.touches[0];
-    this.onMouseMove({
-      clientX: touch.clientX,
-      clientY: touch.clientY,
-      preventDefault: () => {},
-    } as MouseEvent);
-  } 
-}
-
-// Touch end event handler
-private onTouchEnd(event: TouchEvent) {
-  event.preventDefault(); // Prevent default touch behavior
-  if (event.touches.length === 0) {
-    // No touches - simulate mouse up
-    this.onMouseUp({
-      preventDefault: () => {},
-    } as MouseEvent);
-  }
-}
-
   onMouseDown(event: MouseEvent) {
     this.selectedShapeForAltering = [];
+    this.selectedShape = undefined;
+    if(this.currentShape !== SHAPES.DRAW){
+      this.isShowingSidePanel = false;
+    }
     const currentMousePosition = this.getMousePosition(event);
     this.deSelectPreviouslySelectedShape(this.previouslySelectedShape);
     this.displayAllShapes();
@@ -196,7 +199,7 @@ private onTouchEnd(event: TouchEvent) {
         this.previouslySelectedShape = this.selectedShape;
         this.selectedShape.setIsSelected(true);
         this.selectedShape.drawOutline(this.ctx);
-
+        this.isShowingSidePanel = true;
         this.selectedShapeForAltering.push({
           index: this.selectedShapeIndex!,
           shape: this.selectedShape,
@@ -217,7 +220,7 @@ private onTouchEnd(event: TouchEvent) {
       this.currentDrawing = new Draw(
         currentMousePosition,
         this.drawingColor,
-        this.drawingWith
+        this.drawingWidth
       );
     } else if (this.currentShape === SHAPES.ERASER) {
       this.isErasing = true;
@@ -420,12 +423,23 @@ private onTouchEnd(event: TouchEvent) {
     const width = currentMousePosition.posX - this.startPosition.posX;
     const height = currentMousePosition.posY - this.startPosition.posY;
     if (!finalize) {
-      const rect = new Rectangle(this.startPosition, { width, height });
+      const rect = new Rectangle(
+        this.startPosition,
+        { width, height },
+        this.selectedBackgroundColor,
+        this.selectedStrokeColor,
+        this.selectedWidthSize,
+        this.selectedWidthStyle
+      );
       rect.draw(this.ctx);
     } else {
       const newRect = Rectangle.generateShape(
         this.startPosition,
-        currentMousePosition
+        currentMousePosition,
+        this.selectedBackgroundColor,
+        this.selectedStrokeColor,
+        this.selectedWidthSize,
+        this.selectedWidthStyle
       );
       this.shapes.push(newRect);
       newRect.draw(this.ctx);
@@ -445,10 +459,24 @@ private onTouchEnd(event: TouchEvent) {
     };
 
     if (!finalize) {
-      const circle = new Circle(adjustedCenter, radius);
+      const circle = new Circle(
+        adjustedCenter,
+        radius,
+        this.selectedBackgroundColor,
+        this.selectedStrokeColor,
+        this.selectedWidthSize,
+        this.selectedWidthStyle
+      );
       circle.draw(this.ctx);
     } else {
-      const newCircle = new Circle(adjustedCenter, radius);
+      const newCircle = Circle.generateCircle(
+        adjustedCenter,
+        radius,
+        this.selectedBackgroundColor,
+        this.selectedStrokeColor,
+        this.selectedWidthSize,
+        this.selectedWidthStyle
+      );
       this.shapes.push(newCircle);
       newCircle.draw(this.ctx);
     }
@@ -457,13 +485,27 @@ private onTouchEnd(event: TouchEvent) {
   /* Draw line */
   private drawLine(end: IPoint, finalize: boolean = false) {
     if (!finalize) {
-      const line = new Line(this.startPosition, end);
+      const line = new Line(
+        this.startPosition,
+        end,
+        this.selectedBackgroundColor,
+        this.selectedStrokeColor,
+        this.selectedWidthSize,
+        this.selectedWidthStyle
+      );
       line.draw(this.ctx);
     } else {
-      const newLine = new Line(this.startPosition, {
-        posX: end.posX,
-        posY: end.posY,
-      });
+      const newLine = Line.generateLine(
+        this.startPosition,
+        {
+          posX: end.posX,
+          posY: end.posY,
+        },
+        this.selectedBackgroundColor,
+        this.selectedStrokeColor,
+        this.selectedWidthSize,
+        this.selectedWidthStyle
+      );
       this.shapes.push(newLine);
       newLine.draw(this.ctx);
     }
@@ -472,12 +514,23 @@ private onTouchEnd(event: TouchEvent) {
   /* Draw arrow line */
   private drawArrowLine(end: IPoint, finalize: boolean = false) {
     if (!finalize) {
-      const arrowLine = new ArrowLine(this.startPosition, end);
+      const arrowLine = new ArrowLine(
+        this.startPosition,
+        end,
+        this.selectedBackgroundColor,
+        this.selectedStrokeColor,
+        this.selectedWidthSize,
+        this.selectedWidthStyle
+      );
       arrowLine.draw(this.ctx);
     } else {
-      const newArrowLine = new ArrowLine(
+      const newArrowLine = ArrowLine.generateArrowLine(
         { posX: this.startPosition.posX, posY: this.startPosition.posY },
-        { posX: end.posX, posY: end.posY }
+        { posX: end.posX, posY: end.posY },
+        this.selectedBackgroundColor,
+        this.selectedStrokeColor,
+        this.selectedWidthSize,
+        this.selectedWidthStyle
       );
       this.shapes.push(newArrowLine);
       newArrowLine.draw(this.ctx);
@@ -540,11 +593,21 @@ private onTouchEnd(event: TouchEvent) {
   /* Undo & Redo */
   private undo() {
     if (this.shapes.length > 0) {
-      const lastMomento = this.shapes.pop();
+      let lastMomento;
       this.isUndoStart = true;
-      if (lastMomento) {
-        this.redoStack.push(lastMomento);
-        this.displayAllShapes();
+      if(this.undoStack.length > 0){
+        lastMomento = this.undoStack.pop();
+        if (lastMomento) {
+          this.redoStack.push(lastMomento);
+          this.shapes.push(lastMomento);
+          this.displayAllShapes();
+        }
+      }else{ 
+        lastMomento = this.shapes.pop();
+        if (lastMomento) {
+          this.redoStack.push(lastMomento);
+          this.displayAllShapes();
+        }
       }
       if (this.isUndoStart) {
         this.sizeOfShapesAtUndoStart = this.shapes.length;
@@ -598,11 +661,10 @@ private onTouchEnd(event: TouchEvent) {
       this.selectedShapeForAltering.forEach((selected) => {
         const index = selected.index;
         if (index !== undefined && index >= 0 && index < this.shapes.length) {
-          this.redoStack.push(this.shapes[index]);
+          this.undoStack.push(this.shapes[index]);
           this.shapes.splice(index, 1);
         }
       });
-
       this.clearCanvas();
       this.displayAllShapes();
       this.selectedShapeForAltering = [];
@@ -709,7 +771,12 @@ private onTouchEnd(event: TouchEvent) {
       backgroundColorContainer.querySelectorAll("button");
     colorsBtn.forEach((colorBtn) => {
       colorBtn.addEventListener("click", () => {
+        backgroundColorContainer
+          .querySelectorAll("button")
+          .forEach((button) => (button.style.border = "none"));
+        colorBtn.style.border = "1px solid gray";
         const color = colorBtn.getAttribute("data-color")!;
+        this.selectedBackgroundColor = color;
         this.updateSelectedShapeFillColor(color);
       });
     });
@@ -721,7 +788,12 @@ private onTouchEnd(event: TouchEvent) {
       strokeColorContainer.querySelectorAll("button");
     strokeBtn.forEach((strokeBtn) => {
       strokeBtn.addEventListener("click", () => {
+        strokeColorContainer
+          .querySelectorAll("button")
+          .forEach((button) => (button.style.border = "none"));
+        strokeBtn.style.border = "1px solid black";
         const color = strokeBtn.getAttribute("data-color")!;
+        this.selectedStrokeColor = color;
         if (this.currentShape === SHAPES.DRAW) {
           this.drawingColor = color;
         }
@@ -770,8 +842,13 @@ private onTouchEnd(event: TouchEvent) {
     strokeWidthContainer.querySelectorAll("button").forEach((button) => {
       button.addEventListener("click", () => {
         const widthType = button.id;
+        strokeWidthContainer
+          .querySelectorAll("button")
+          .forEach((button) => (button.style.border = "none"));
+        button.style.border = "1px solid black";
+        this.selectedWidthSize = this.widthSelector(widthType);
         if (this.currentShape === SHAPES.DRAW) {
-          this.drawingWith = this.widthSelector(widthType);
+          this.drawingWidth = this.widthSelector(widthType);
         }
         this.updateSelectedShapeWidth(widthType);
       });
@@ -792,12 +869,17 @@ private onTouchEnd(event: TouchEvent) {
 
   /**Width style change */
   private changeWidthStyleOfShape() {
-    const strokeWidthContainer = document.querySelector(
+    const strokeWidthStyleContainer = document.querySelector(
       ".stroke__style"
     ) as HTMLDivElement;
-    strokeWidthContainer.querySelectorAll("button").forEach((button) => {
+    strokeWidthStyleContainer.querySelectorAll("button").forEach((button) => {
       button.addEventListener("click", () => {
+        strokeWidthStyleContainer
+          .querySelectorAll("button")
+          .forEach((button) => (button.style.border = "none"));
         const widthStyle = button.id;
+        button.style.border = "1px solid black";
+        this.selectedWidthStyle = this.widthStyleSelector(widthStyle);
         this.updateSelectedShapeWidthStyle(widthStyle);
       });
     });
@@ -962,6 +1044,16 @@ private onTouchEnd(event: TouchEvent) {
   ) {
     if (previouslySelectedShape) {
       previouslySelectedShape.setIsSelected(false);
+    }
+  }
+
+  private sidePanelHandler() {
+    console.log("hi");
+    const sidePane = document.querySelector(".panelColumn") as HTMLDivElement;
+    if (this.isShowingSidePanel) {
+      sidePane.style.display = "block";
+    } else {
+      sidePane.style.display = "none";
     }
   }
 }

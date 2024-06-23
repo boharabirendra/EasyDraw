@@ -19,7 +19,7 @@ export class Line extends Shape {
     fillColor = "transparent",
     strokeColor = "black",
     strokeWidth = 2,
-    strokeStyle = []
+    strokeStyle: number[] = []
   ) {
     super(start, SHAPES.LINE);
     this.end = end;
@@ -147,5 +147,23 @@ export class Line extends Shape {
         this.end.posY += edy;
         break;
     }
+  }
+
+  static generateLine(
+    start: IPoint,
+    end: IPoint,
+    fillColor: string,
+    strokeColor: string,
+    strokeWidth: number,
+    strokeStyle: number[]
+  ) {
+    return new Line(
+      start,
+      end,
+      fillColor,
+      strokeColor,
+      strokeWidth,
+      strokeStyle
+    );
   }
 }

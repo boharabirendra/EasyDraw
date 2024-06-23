@@ -31,6 +31,7 @@ body {
   border: none;
   padding: 8px 12px;
   border-radius: 10px;
+  box-shadow: 0px 0px 0.5 gray;
 }
 
 .toolbar_icon button:hover {
@@ -47,24 +48,21 @@ body {
   position: absolute;
   bottom: 3%;
   left: 2%;
-  padding: 6px 10px;
   cursor: pointer;
 }
 
 .zoom {
   background-color: #ececf4;
-  padding: 8px 10px;
   border-radius: 5px;
   display: flex;
   align-items: center;
-  column-gap: 1.5rem;
+  column-gap: 0.5rem;
   justify-content: center;
 }
 
 .redo_undo {
   display: flex;
-  gap: 15px;
-  padding: 6px 10px;
+  gap: 10px;
   background-color: #ececf4;
   border-radius: 5px;
 }
@@ -75,6 +73,12 @@ body {
   opacity: 0.5;
   cursor: pointer;
 }
+
+.zoom__out,
+.zoom__in{
+  padding: 8px 14px;
+}
+
 .zoom__percentage {
   padding-bottom: 3px;
 }
@@ -88,9 +92,12 @@ body {
 }
 
 .redo_undo img {
-  width: 16px;
+  width: 36px;
   cursor: pointer;
+  padding: 6px 10px;
+  border-radius: 5px;
 }
+
 
 .panelColumn {
   position: absolute;
@@ -108,6 +115,7 @@ body {
   width: 170px;
   cursor: default;
   background-color: white;
+  display: none;
 }
 
 .panelColumn h3 {
@@ -149,7 +157,7 @@ body {
 .thin div {
   height: 2px;
   width: 10px;
-  background-color: gray;
+  background-color: rgb(216, 216, 216);
   border-radius: 4px;
 }
 .bold div {

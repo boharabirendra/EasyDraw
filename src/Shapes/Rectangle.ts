@@ -28,14 +28,14 @@ export class Rectangle extends Shape {
     fillColor = "transparent",
     strokeColor = "black",
     strokeWidth = 2,
-    strokeStyle = [],
+    strokeStyle: number[] = []
   ) {
     super(position, SHAPES.RECTANGLE);
     this.dimension = dimension;
     this.fillColor = fillColor;
     this.strokeColor = strokeColor;
     this.strokeWidth = strokeWidth;
-    this.strokeStyle = strokeStyle
+    this.strokeStyle = strokeStyle;
   }
 
   draw(ctx: CanvasRenderingContext2D): void {
@@ -58,7 +58,6 @@ export class Rectangle extends Shape {
     }
     ctx.restore();
   }
-
 
   drawOutline(ctx: CanvasRenderingContext2D): void {
     ctx.save();
@@ -151,9 +150,9 @@ export class Rectangle extends Shape {
 
   reSize(...args: any) {
     const [edge, dx, dy] = args;
-    const minWidth = 10;  
+    const minWidth = 10;
     const minHeight = 10;
-  
+
     switch (edge) {
       case "left":
         if (this.dimension.width - dx >= minWidth) {
@@ -165,7 +164,7 @@ export class Rectangle extends Shape {
           this.dimension.width = minWidth;
         }
         break;
-  
+
       case "right":
         if (this.dimension.width + dx >= minWidth) {
           this.dimension.width += dx;
@@ -173,7 +172,7 @@ export class Rectangle extends Shape {
           this.dimension.width = minWidth;
         }
         break;
-  
+
       case "top":
         if (this.dimension.height - dy >= minHeight) {
           this.position.posY += dy;
@@ -184,7 +183,7 @@ export class Rectangle extends Shape {
           this.dimension.height = minHeight;
         }
         break;
-  
+
       case "bottom":
         if (this.dimension.height + dy >= minHeight) {
           this.dimension.height += dy;
@@ -192,7 +191,7 @@ export class Rectangle extends Shape {
           this.dimension.height = minHeight;
         }
         break;
-  
+
       case "top-left":
         if (this.dimension.width - dx >= minWidth) {
           this.position.posX += dx;
@@ -211,7 +210,7 @@ export class Rectangle extends Shape {
           this.dimension.height = minHeight;
         }
         break;
-  
+
       case "top-right":
         if (this.dimension.width + dx >= minWidth) {
           this.dimension.width += dx;
@@ -227,7 +226,7 @@ export class Rectangle extends Shape {
           this.dimension.height = minHeight;
         }
         break;
-  
+
       case "bottom-left":
         if (this.dimension.width - dx >= minWidth) {
           this.position.posX += dx;
@@ -243,7 +242,7 @@ export class Rectangle extends Shape {
           this.dimension.height = minHeight;
         }
         break;
-  
+
       case "bottom-right":
         if (this.dimension.width + dx >= minWidth) {
           this.dimension.width += dx;
@@ -258,12 +257,25 @@ export class Rectangle extends Shape {
         break;
     }
   }
-  
 
-  static generateShape(start: IPoint, end: IPoint): Rectangle {
+  static generateShape(
+    start: IPoint,
+    end: IPoint,
+    fillColor: string,
+    strokeColor: string,
+    strokeWidth: number,
+    strokeStyle: number[]
+  ): Rectangle {
     const width = end.posX - start.posX;
     const height = end.posY - start.posY;
-    return new Rectangle(start, { width, height });
+    return new Rectangle(
+      start,
+      { width, height },
+      fillColor,
+      strokeColor,
+      strokeWidth,
+      strokeStyle
+    );
   }
 
   move(dx: number, dy: number): void {

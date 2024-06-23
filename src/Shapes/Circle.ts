@@ -25,7 +25,7 @@ export class Circle extends Shape {
     fillColor = "transparent",
     strokeColor = "black",
     strokeWidth = 2,
-    strokeStyle = [],
+    strokeStyle: number[] = [],
   ) {
     super(position, SHAPES.CIRCLE);
     this.radius = radius;
@@ -136,8 +136,11 @@ isMouseNearEdge(currentMousePosition: IPoint): string | null {
     this.radius = Math.sqrt(x * x + y * y);
   }
 
-  static createFromRadius(position: IPoint, radius: number): Circle {
-    return new Circle(position, radius);
+  static generateCircle(position: IPoint, radius: number,  fillColor: string,
+    strokeColor: string,
+    strokeWidth: number,
+    strokeStyle: number[]): Circle {
+    return new Circle(position, radius,  fillColor, strokeColor, strokeWidth, strokeStyle);
   }
 
   move(dx: number, dy: number): void {
