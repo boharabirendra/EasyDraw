@@ -3,7 +3,6 @@ import { Shape } from "./Shape";
 
 export class Draw extends Shape {
   path: IPoint[];
-  fillColor: string;
   strokeColor: string;
   strokeWidth: number;
 
@@ -11,11 +10,9 @@ export class Draw extends Shape {
     start: IPoint,
     strokeColor = "black",
     strokeWidth = 16,
-    fillColor = "transparent"
   ) {
     super(start, SHAPES.DRAW);
     this.path = [start];
-    this.fillColor = fillColor;
     this.strokeColor = strokeColor;
     this.strokeWidth = strokeWidth;
   }

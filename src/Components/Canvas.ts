@@ -64,7 +64,7 @@ export class Canvas {
     this.canvas.width = DIMENSION.CANVAS_WIDTH;
     this.canvas.height = DIMENSION.CANVAS_HEIGHT;
     this.ctx = this.canvas.getContext("2d") as CanvasRenderingContext2D;
-    this.ctx.font = '24px "Gloria Hallelujah", sans-serif';
+    this.ctx.font = '24px "Virgil", sans-serif';
     document.getElementById("app")?.appendChild(this.canvas);
     this.zoomPercentageEl = document.querySelector(
       "#zoom__percentage"
@@ -76,6 +76,12 @@ export class Canvas {
     this.canvas.addEventListener("mousedown", this.onMouseDown.bind(this));
     this.canvas.addEventListener("mousemove", this.onMouseMove.bind(this));
     this.canvas.addEventListener("mouseup", this.onMouseUp.bind(this));
+
+    // Add touch event listeners
+    this.canvas.addEventListener("touchstart", this.onTouchStart.bind(this));
+    this.canvas.addEventListener("touchmove", this.onTouchMove.bind(this));
+    this.canvas.addEventListener("touchend", this.onTouchEnd.bind(this));
+
     document.addEventListener("click", this.sidePanelHandler.bind(this));
     document.addEventListener("keydown", this.keyboardActions.bind(this));
     this.zoomPercentageEl!.innerHTML = `${this.zoomPercentage}%`;
@@ -89,6 +95,35 @@ export class Canvas {
     this.undoRedoManager();
     this.zoomManager();
     this.handleActions();
+    this.getDataFromLocalStorage();
+  }
+
+
+  onTouchStart(event: TouchEvent) {
+    if (event.touches.length === 1) {
+      const touch = event.touches[0];
+      const mouseEvent = new MouseEvent("mousedown", {
+        clientX: touch.clientX,
+        clientY: touch.clientY,
+      });
+      this.onMouseDown(mouseEvent);
+    }
+  }
+
+  onTouchMove(event: TouchEvent) {
+    if (event.touches.length === 1) {
+      const touch = event.touches[0];
+      const mouseEvent = new MouseEvent("mousemove", {
+        clientX: touch.clientX,
+        clientY: touch.clientY,
+      });
+      this.onMouseMove(mouseEvent);
+    }
+  }
+
+  onTouchEnd(event: TouchEvent) {
+    const mouseEvent = new MouseEvent("mouseup", {});
+    this.onMouseUp(mouseEvent);
   }
 
   onMouseDown(event: MouseEvent) {
@@ -333,8 +368,11 @@ export class Canvas {
       if (tempSelectedShape) {
         tempSelectedShape.setIsSelected(true);
         tempSelectedShape.drawOutline(this.ctx);
-        if(shapeIndex !== null){
-          this.selectedShapeForAltering.push({index: shapeIndex, shape: tempSelectedShape});
+        if (shapeIndex !== null) {
+          this.selectedShapeForAltering.push({
+            index: shapeIndex,
+            shape: tempSelectedShape,
+          });
         }
         this.deleteSelectedShapes();
       }
@@ -352,7 +390,7 @@ export class Canvas {
     };
   }
 
-   /* Tool bar selection */
+  /* Tool bar selection */
   private toolBarManager() {
     document
       .querySelector("#toolbar_container")
@@ -509,8 +547,9 @@ export class Canvas {
     input.style.position = "absolute";
     input.style.border = "none";
     input.style.outline = "none";
-    input.style.fontFamily = "Gloria Hallelujah, sans-serif";
+    input.style.fontFamily = "Virgil, sans-serif";
     input.style.fontSize = "24px";
+    input.style.color = this.selectedStrokeColor;
     input.style.left = `${position.posX}px`;
     input.style.top = `${position.posY}px`;
     input.style.maxWidth = "50rem";
@@ -534,7 +573,7 @@ export class Canvas {
             height: textHeight,
           };
 
-          const newText = new Text(position, text, boundingBox);
+          const newText = new Text(position, text, boundingBox, this.selectedStrokeColor);
           this.shapes.push(newText);
           this.clearCanvas();
           this.shapes.forEach((shape) => shape.draw(this.ctx));
@@ -714,6 +753,14 @@ export class Canvas {
       this.toBeChangeShape instanceof ArrowLine
     ) {
       this.toBeChangeShape.strokeColor = color;
+      this.displayAllShapes();
+    }
+    if (
+      this.toBeChangeShape &&
+      this.toBeChangeShape.shapeType === SHAPES.TEXT &&
+      this.toBeChangeShape instanceof Text
+    ) {
+      this.toBeChangeShape.fontColor = color;
       this.displayAllShapes();
     }
     if (
@@ -1111,8 +1158,83 @@ export class Canvas {
             this.deleteSelectedShapes();
           } else if (id === "exportBtn") {
             this.exportSelectedShape();
+          } else if (id === "saveBtn") {
+            this.saveToLocalStorage();
           }
         });
       });
+  }
+
+  /**Local storage */
+  private saveToLocalStorage() {
+    localStorage.setItem("savedData", JSON.stringify(this.shapes));
+  }
+
+  private getDataFromLocalStorage() {
+    const savedData = localStorage.getItem("savedData");
+    if (savedData) {
+      const shapes: any[] = JSON.parse(savedData);
+      console.log(shapes);
+      shapes.forEach((shape) => {
+        if (shape.shapeType === SHAPES.RECTANGLE) {
+          this.shapes.push(
+            new Rectangle(
+              shape.position,
+              shape.dimension,
+              shape.fillColor,
+              shape.strokeColor,
+              shape.strokeWidth,
+              shape.strokeStyle
+            )
+          );
+        } else if (shape.shapeType === SHAPES.CIRCLE) {
+          this.shapes.push(
+            new Circle(
+              shape.position,
+              shape.radius,
+              shape.fillColor,
+              shape.strokeColor,
+              shape.strokeWidth,
+              shape.strokeStyle
+            )
+          );
+        } else if (shape.shapeType === SHAPES.LINE) {
+          this.shapes.push(
+            new Line(
+              shape.position,
+              shape.end,
+              shape.fillColor,
+              shape.strokeColor,
+              shape.strokeWidth,
+              shape.strokeStyle
+            )
+          );
+        } else if (shape.shapeType === SHAPES.ARROW) {
+          this.shapes.push(
+            new ArrowLine(
+              shape.position,
+              shape.end,
+              shape.fillColor,
+              shape.strokeColor,
+              shape.strokeWidth,
+              shape.strokeStyle
+            )
+          );
+        } else if (shape.shapeType === SHAPES.TEXT) {
+          this.shapes.push(
+            new Text(shape.position, shape.text, shape.boundingBox, shape.strokeColor)
+          );
+        } else if (shape.shapeType === SHAPES.DRAW) {
+          const newDraw = new Draw(
+            shape.position,
+            shape.strokeColor,
+            shape.strokeWidth
+          );
+          shape.path.forEach((path: IPoint) => newDraw.addPoint(path));
+          this.shapes.push(newDraw);
+        }
+      });
+      this.displayAllShapes();
+    }
   }
 }

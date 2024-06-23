@@ -38,6 +38,7 @@ export function selectionIndicateCircle(
   ctx.arc(center.posX, center.posY, radius, 0, Math.PI * 2);
   ctx.fillStyle = "red";
   ctx.fill();
+  ctx.setLineDash([]);
   ctx.lineWidth = 2;
   ctx.strokeStyle = "#B3B1EC";
   ctx.stroke();
@@ -85,7 +86,8 @@ export function selectionIndicateRectangle(
   ctx.save();
   ctx.beginPath();
   ctx.rect(position.posX, position.posY, dimension.width, dimension.height); 
-  ctx.strokeStyle = "transparent";
+  ctx.strokeStyle = "gray";
+  ctx.lineWidth = 0.1;
   ctx.fillStyle = "transparent";
   ctx.fill(); 
   ctx.stroke(); 
