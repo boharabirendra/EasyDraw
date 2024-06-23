@@ -47,8 +47,6 @@ export class ArrowLine extends Shape {
       this.end.posX - headLength * Math.cos(angle + Math.PI / 6),
       this.end.posY - headLength * Math.sin(angle + Math.PI / 6)
     );
-    ctx.fillStyle = this.fillColor;
-    ctx.fill();
     ctx.lineWidth = this.strokeWidth;
     ctx.setLineDash(this.strokeStyle);
     ctx.strokeStyle = this.strokeColor;

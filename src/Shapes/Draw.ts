@@ -41,9 +41,23 @@ export class Draw extends Shape {
     ctx.stroke();
     ctx.restore();
   }
-  // @ts-ignore
+
   isMouseWithinShape(currentMousePosition: IPoint): boolean {
-    return false;
+    const tempCanvas = document.createElement('canvas');
+    const tempContext = tempCanvas.getContext('2d')!;
+    tempCanvas.width = 1;
+    tempCanvas.height = 1;
+
+    tempContext.beginPath();
+    tempContext.moveTo(this.path[0].posX, this.path[0].posY);
+    for (let i = 1; i < this.path.length; i++) {
+      tempContext.lineTo(this.path[i].posX, this.path[i].posY);
+    }
+    tempContext.lineWidth = this.strokeWidth;
+    tempContext.strokeStyle = this.strokeColor;
+    tempContext.stroke();
+
+    return tempContext.isPointInStroke(currentMousePosition.posX, currentMousePosition.posY);
   }
   // @ts-ignore
   isMouseNearEdge(currentMousePosition: IPoint): string | boolean | null {

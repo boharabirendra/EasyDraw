@@ -76,110 +76,25 @@ export class Canvas {
     this.canvas.addEventListener("mousedown", this.onMouseDown.bind(this));
     this.canvas.addEventListener("mousemove", this.onMouseMove.bind(this));
     this.canvas.addEventListener("mouseup", this.onMouseUp.bind(this));
-
-    /* Tool bar selection */
-    document
-      .querySelector("#toolbar_container")
-      ?.querySelectorAll("button")
-      .forEach((button) => {
-        button.addEventListener("click", () => {
-          const shape = button.getAttribute("data-shape");
-          if (shape) {
-            this.currentShape = SHAPES[shape as keyof typeof SHAPES];
-            this.isErasing = shape === "ERASER";
-            if (this.currentShape !== SHAPES.CURSOR) {
-              this.isShowingSidePanel = true;
-            } else {
-              this.isShowingSidePanel = false;
-            }
-          }
-          if (button.id === "clearBtn") {
-            this.shapes = [];
-            this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-            this.currentShape = SHAPES.CURSOR;
-            this.isErasing = false;
-            adjustToolSection();
-          }
-        });
-      });
-
-    /*Undo & Redo */
-    document
-      .querySelector("#redo_undo")
-      ?.querySelectorAll("button")
-      .forEach((button) => {
-        button.addEventListener("click", () => {
-          button.style.transition = "0.3s";
-          if (button.id === "undoBtn") {
-            button.style.border = "1px solid blue";
-            button.style.borderTopLeftRadius = "5px";
-            button.style.borderBottomLeftRadius = "5px";
-            this.undo();
-          } else if (button.id === "redoBtn") {
-            button.style.border = "1px solid blue";
-            button.style.borderTopRightRadius = "5px";
-            button.style.borderBottomRightRadius = "5px";
-            this.redo();
-          }
-          setTimeout(()=>{
-            button.style.border = "none";
-          }, 700);
-        });
-      });
-
-    document
-      .querySelector("#zoom")
-      ?.querySelectorAll("button")
-      .forEach((button) => {
-        button.addEventListener("click", () => {
-          button.style.transition = "0.3s";
-          if (button.id === "zoom__out") {
-            button.style.border = "1px solid blue";
-            button.style.borderTopLeftRadius = "5px";
-            button.style.borderBottomLeftRadius = "5px";
-            this.zoomOut();
-          } else if (button.id === "zoom__in") {
-            button.style.border = "1px solid blue";
-            button.style.borderTopRightRadius = "5px";
-            button.style.borderBottomRightRadius = "5px";
-            this.zoomIn();
-          } else if (button.id === "zoom__percentage") {
-            this.scale = 1;
-            this.zoomPercentage = 100;
-            this.zoomPercentageEl!.innerHTML = `${this.zoomPercentage}%`;
-            this.displayAllShapes();
-          }
-          setTimeout(()=>{
-            button.style.border = "none";
-          }, 700);
-        });
-      });
-
     document.addEventListener("click", this.sidePanelHandler.bind(this));
-    const deleteBtn = document.querySelector("#deleteBtn") as HTMLButtonElement;
-    deleteBtn.addEventListener("click", ()=>{
-      this.deleteSelectedShapes();
-      deleteBtn.style.backgroundColor = "rgb(216, 216, 216)";
-      deleteBtn.style.transition = "0.3s";
-      setTimeout(()=>{
-        deleteBtn.style.backgroundColor = "#EFEFEF";
-      }, 700);
-    });
-
     document.addEventListener("keydown", this.keyboardActions.bind(this));
     this.zoomPercentageEl!.innerHTML = `${this.zoomPercentage}%`;
     /* Function call */
     highlightCurrentSelectedTool();
+    this.toolBarManager();
     this.changeShapeColor();
     this.changeWidthOfShape();
     this.changeWidthStyleOfShape();
     this.layerManager();
+    this.undoRedoManager();
+    this.zoomManager();
+    this.handleActions();
   }
 
   onMouseDown(event: MouseEvent) {
     this.selectedShapeForAltering = [];
     this.selectedShape = undefined;
-    if(this.currentShape !== SHAPES.DRAW){
+    if (this.currentShape !== SHAPES.DRAW) {
       this.isShowingSidePanel = false;
     }
     const currentMousePosition = this.getMousePosition(event);
@@ -236,6 +151,7 @@ export class Canvas {
     /* Changing mouse shape */
     this.changeMouseShape(position, event);
     this.shapeConnector(event);
+    this.eraseShape(event);
 
     if (this.isDragging && this.selectedShape) {
       const dx = position.posX - this.dragStartPosition.posX;
@@ -404,6 +320,30 @@ export class Canvas {
     }
   }
 
+  private eraseShape(event: MouseEvent) {
+    const currentMousePosition = this.getMousePosition(event);
+    let shapeIndex: number | null = null;
+    if (this.currentShape === SHAPES.ERASER) {
+      const tempSelectedShape = this.shapes.find((shape, index) => {
+        if (shape) {
+          shapeIndex = index;
+          return shape.isMouseWithinShape(currentMousePosition);
+        }
+      });
+      if (tempSelectedShape) {
+        tempSelectedShape.setIsSelected(true);
+        tempSelectedShape.drawOutline(this.ctx);
+        console.log("index", shapeIndex);
+        if(shapeIndex !== null){
+          this.selectedShapeForAltering.push({index: shapeIndex, shape: tempSelectedShape});
+        }
+        console.log("erase function");
+        console.log(this.selectedShapeForAltering);
+        this.deleteSelectedShapes();
+      }
+    }
+  }
+
   private clearCanvas() {
     this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
   }
@@ -413,6 +353,34 @@ export class Canvas {
       posX: event.offsetX,
       posY: event.offsetY,
     };
+  }
+
+   /* Tool bar selection */
+  private toolBarManager() {
+    document
+      .querySelector("#toolbar_container")
+      ?.querySelectorAll("button")
+      .forEach((button) => {
+        button.addEventListener("click", () => {
+          const shape = button.getAttribute("data-shape");
+          if (shape) {
+            this.currentShape = SHAPES[shape as keyof typeof SHAPES];
+            this.isErasing = shape === "ERASER";
+            if (this.currentShape !== SHAPES.CURSOR) {
+              this.isShowingSidePanel = true;
+            } else {
+              this.isShowingSidePanel = false;
+            }
+          }
+          if (button.id === "clearBtn") {
+            this.shapes = [];
+            this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+            this.currentShape = SHAPES.CURSOR;
+            this.isErasing = false;
+            adjustToolSection();
+          }
+        });
+      });
   }
 
   /* Draw rectangle */
@@ -592,26 +560,24 @@ export class Canvas {
 
   /* Undo & Redo */
   private undo() {
-    if (this.shapes.length > 0) {
-      let lastMomento;
-      this.isUndoStart = true;
-      if(this.undoStack.length > 0){
-        lastMomento = this.undoStack.pop();
-        if (lastMomento) {
-          this.redoStack.push(lastMomento);
-          this.shapes.push(lastMomento);
-          this.displayAllShapes();
-        }
-      }else{ 
-        lastMomento = this.shapes.pop();
-        if (lastMomento) {
-          this.redoStack.push(lastMomento);
-          this.displayAllShapes();
-        }
+    let lastMomento;
+    this.isUndoStart = true;
+    if (this.undoStack.length > 0) {
+      lastMomento = this.undoStack.pop();
+      if (lastMomento) {
+        this.redoStack.push(lastMomento);
+        this.shapes.push(lastMomento);
+        this.displayAllShapes();
       }
-      if (this.isUndoStart) {
-        this.sizeOfShapesAtUndoStart = this.shapes.length;
+    } else {
+      lastMomento = this.shapes.pop();
+      if (lastMomento) {
+        this.redoStack.push(lastMomento);
+        this.displayAllShapes();
       }
+    }
+    if (this.isUndoStart) {
+      this.sizeOfShapesAtUndoStart = this.shapes.length;
     }
   }
   private redo() {
@@ -657,6 +623,7 @@ export class Canvas {
   }
 
   private deleteSelectedShapes() {
+    console.log(this.selectedShapeForAltering);
     if (this.selectedShapeForAltering.length > 0) {
       this.selectedShapeForAltering.forEach((selected) => {
         const index = selected.index;
@@ -1048,12 +1015,108 @@ export class Canvas {
   }
 
   private sidePanelHandler() {
-    console.log("hi");
     const sidePane = document.querySelector(".panelColumn") as HTMLDivElement;
     if (this.isShowingSidePanel) {
       sidePane.style.display = "block";
     } else {
       sidePane.style.display = "none";
     }
+  }
+
+  /**Export selected shape */
+  private exportSelectedShape() {
+    const exportedImage = document.getElementById(
+      "exportedImage"
+    ) as HTMLImageElement;
+    const tempCanvas = document.createElement("canvas") as HTMLCanvasElement;
+    const tempContext = tempCanvas.getContext("2d")!;
+    tempCanvas.width = this.canvas.width;
+    tempCanvas.height = this.canvas.height;
+    if (this.selectedShapeForAltering.length > 0) {
+      const selectedShape = this.selectedShapeForAltering[0].shape;
+      selectedShape.setIsSelected(false);
+      selectedShape.draw(tempContext);
+      const imageData = tempCanvas.toDataURL("image/png");
+      exportedImage.src = imageData;
+      const downloadLink = document.createElement("a");
+      downloadLink.href = imageData;
+      downloadLink.download = "selected_shapes.png";
+      document.body.appendChild(downloadLink);
+      downloadLink.click();
+      document.body.removeChild(downloadLink);
+    }
+  }
+
+  /**Zoom section */
+  private zoomManager() {
+    document
+      .querySelector("#zoom")
+      ?.querySelectorAll("button")
+      .forEach((button) => {
+        button.addEventListener("click", () => {
+          button.style.border = "1px solid blue";
+          button.style.borderTopLeftRadius = "5px";
+          button.style.borderBottomLeftRadius = "5px";
+          button.style.transition = "0.3s";
+          if (button.id === "zoom__out") {
+            this.zoomOut();
+          } else if (button.id === "zoom__in") {
+            this.zoomIn();
+          } else if (button.id === "zoom__percentage") {
+            this.scale = 1;
+            this.zoomPercentage = 100;
+            this.zoomPercentageEl!.innerHTML = `${this.zoomPercentage}%`;
+            this.displayAllShapes();
+          }
+          setTimeout(() => {
+            button.style.border = "none";
+          }, 700);
+        });
+      });
+  }
+
+  /*Undo & Redo */
+  private undoRedoManager() {
+    document
+      .querySelector("#redo_undo")
+      ?.querySelectorAll("button")
+      .forEach((button) => {
+        button.addEventListener("click", () => {
+          button.style.border = "1px solid blue";
+          button.style.borderTopLeftRadius = "5px";
+          button.style.borderBottomLeftRadius = "5px";
+          button.style.transition = "0.3s";
+          if (button.id === "undoBtn") {
+            this.undo();
+          } else if (button.id === "redoBtn") {
+            this.redo();
+          }
+          setTimeout(() => {
+            button.style.border = "none";
+          }, 700);
+        });
+      });
+  }
+
+  /**Action section */
+  private handleActions() {
+    document
+      .querySelector(".actions")
+      ?.querySelectorAll("button")
+      .forEach((button) => {
+        button.addEventListener("click", () => {
+          button.style.backgroundColor = "rgb(216, 216, 216)";
+          button.style.transition = "0.3s";
+          setTimeout(() => {
+            button.style.backgroundColor = "#EFEFEF";
+          }, 700);
+          const id = button.id;
+          if (id === "deleteBtn") {
+            this.deleteSelectedShapes();
+          } else if (id === "exportBtn") {
+            this.exportSelectedShape();
+          }
+        });
+      });
   }
 }

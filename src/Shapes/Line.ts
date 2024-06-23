@@ -34,8 +34,6 @@ export class Line extends Shape {
     ctx.beginPath();
     ctx.moveTo(this.position.posX, this.position.posY);
     ctx.lineTo(this.end.posX, this.end.posY);
-    ctx.fillStyle = this.fillColor;
-    ctx.fill();
     ctx.lineWidth = this.strokeWidth;
     ctx.setLineDash(this.strokeStyle);
     ctx.strokeStyle = this.strokeColor;

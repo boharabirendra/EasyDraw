@@ -11,6 +11,7 @@ import {
   getLeftBottomCircleCenter,
   getRightTopCircleCenter,
   getRightBottomCircleCenter,
+  selectionIndicateRectangle,
 } from "../Utils/Common";
 import { Shape } from "./Shape";
 
@@ -60,18 +61,7 @@ export class Rectangle extends Shape {
   }
 
   drawOutline(ctx: CanvasRenderingContext2D): void {
-    ctx.save();
-    ctx.beginPath();
-    ctx.rect(
-      this.position.posX,
-      this.position.posY,
-      this.dimension.width,
-      this.dimension.height
-    );
-    ctx.lineWidth = 2;
-    ctx.strokeStyle = "gray";
-    ctx.stroke();
-    ctx.restore();
+    selectionIndicateRectangle(ctx, this.position, this.dimension);
     const leftTopCircleCenter: IPoint = getLeftTopCircleCenter(this.position);
     const leftBottomCircle: IPoint = getLeftBottomCircleCenter(
       this.position,
