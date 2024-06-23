@@ -14,7 +14,7 @@ body {
   display: flex;
   position: absolute;
   gap: 5px;
-  top: 5%;
+  top: 8%;
   left: 50%;
   transform: translate(-50%, -50%);
   padding: 6px 10px;

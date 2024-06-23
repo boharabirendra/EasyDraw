@@ -16,7 +16,7 @@ export function highlightCurrentSelectedTool(): void {
       removeBg();
       if (tool.id === "eraserBtn") {
         body.style.cursor =
-          "url(./src/assets/Images/eraser.png), auto";
+          "url(https://res.cloudinary.com/drmynjjhg/image/upload/v1719141476/eraser_vnk7nr.png), auto";
       } else if (tool.id === "clearBtn" || tool.id === "cursorBtn") {
         body.style.cursor = "default";
       } else {
