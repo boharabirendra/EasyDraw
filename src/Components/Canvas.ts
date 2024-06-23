@@ -333,12 +333,9 @@ export class Canvas {
       if (tempSelectedShape) {
         tempSelectedShape.setIsSelected(true);
         tempSelectedShape.drawOutline(this.ctx);
-        console.log("index", shapeIndex);
         if(shapeIndex !== null){
           this.selectedShapeForAltering.push({index: shapeIndex, shape: tempSelectedShape});
         }
-        console.log("erase function");
-        console.log(this.selectedShapeForAltering);
         this.deleteSelectedShapes();
       }
     }
@@ -623,7 +620,6 @@ export class Canvas {
   }
 
   private deleteSelectedShapes() {
-    console.log(this.selectedShapeForAltering);
     if (this.selectedShapeForAltering.length > 0) {
       this.selectedShapeForAltering.forEach((selected) => {
         const index = selected.index;

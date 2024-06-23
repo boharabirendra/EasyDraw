@@ -103,7 +103,7 @@ body {
   position: absolute;
   display: flex;
   flex-direction: column;
-  row-gap: 0.75rem;
+  row-gap: 1.75rem;
   padding: 0.75rem;
   overflow-y: auto;
   box-shadow: 0px 0px 0.9310142993927002px 0px rgba(0, 0, 0, 0.17),
@@ -116,6 +116,10 @@ body {
   cursor: default;
   background-color: white;
   display: none;
+}
+
+.panel__section{
+  margin-bottom: 1rem;
 }
 
 .panelColumn h3 {
@@ -142,9 +146,7 @@ body {
   border: none;
   cursor: pointer;
 }
-.stroke__width{
-  margin-bottom: 0.3rem;
-}
+
 
 .stroke__style button, .layer__container button, .actions button{
   padding: 0.3rem 0.5rem;
