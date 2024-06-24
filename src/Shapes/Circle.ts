@@ -37,6 +37,7 @@ export class Circle extends Shape {
   }
 
   draw(ctx: CanvasRenderingContext2D) {
+
     ctx.save();
     ctx.beginPath();
     ctx.arc(
@@ -56,6 +57,18 @@ export class Circle extends Shape {
     if(this.isSelected){
       this.drawOutline(ctx);
     }
+  }
+
+  setPosition(scale: number){
+    this.position.posX = this.position.posX * scale;
+    this.position.posY = this.position.posY * scale;
+  }
+  setRadius(scale: number){
+    this.radius = this.radius * scale;
+  }
+
+  getCenter():IPoint{
+    return this.position;
   }
 
   setIsSelected(value: boolean): void{

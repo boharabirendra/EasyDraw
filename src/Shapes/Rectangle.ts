@@ -61,6 +61,10 @@ export class Rectangle extends Shape {
     ctx.restore();
   }
 
+  getRectangleCenter(): IPoint{
+    return this.position;
+  }
+
   drawOutline(ctx: CanvasRenderingContext2D): void {
     selectionIndicateRectangle(ctx, this.position, this.dimension);
     const leftTopCircleCenter: IPoint = getLeftTopCircleCenter(this.position);

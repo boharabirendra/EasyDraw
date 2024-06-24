@@ -12,7 +12,6 @@ export class ArrowLine extends Shape {
   strokeColor: string;
   strokeWidth: number;
   strokeStyle: number[];
-
   constructor(
     start: IPoint,
     end: IPoint,
@@ -139,7 +138,6 @@ export class ArrowLine extends Shape {
     let param = dot / len_sq;
 
     let xx, yy;
-
     if (param < 0 || (start.posX === end.posX && start.posY === end.posY)) {
       xx = start.posX;
       yy = start.posY;

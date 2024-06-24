@@ -58,12 +58,17 @@ export class Canvas {
   private selectedBackgroundColor: string = "transparent";
   private selectedWidthSize: number = THIN_LINE_WIDTH;
   private selectedWidthStyle: number[] = [];
+  private startingShape: Shape | null = null;
+  private endingShape: Shape | null = null;
+  private isConnectionStart: boolean = false;
+  private isConnectionEnd: boolean = false;
 
   constructor() {
     this.canvas = document.createElement("canvas");
     this.canvas.width = DIMENSION.CANVAS_WIDTH;
     this.canvas.height = DIMENSION.CANVAS_HEIGHT;
     this.ctx = this.canvas.getContext("2d") as CanvasRenderingContext2D;
+
     this.ctx.font = '24px "Virgil", sans-serif';
     document.getElementById("app")?.appendChild(this.canvas);
     this.zoomPercentageEl = document.querySelector(
@@ -94,29 +99,9 @@ export class Canvas {
     this.getDataFromLocalStorage();
   }
 
-
   /**Edit text */
-  doubleClick(event:MouseEvent){
-    const currentMousePosition = this.getMousePosition(event);
-    for (let i = this.shapes.length - 1; i >= 0; i--) {
-      if (this.shapes[i].isMouseWithinShape(currentMousePosition)) {
-        this.selectedShape = this.shapes[i];
-        this.selectedShapeIndex = i;
-        break;
-      }
-    }
-    
-    if(this.selectedShape instanceof Text){ 
-      const prevText = this.selectedShape.text;
-      const rect: { x: number; y: number; width: number; height: number } = this.selectedShape.boundingBox;
-      this.ctx.clearRect(rect.x - 5, rect.y + 18, rect.width + 10, rect.height + 14);
-      this.shapes.splice(this.selectedShapeIndex!, 1);
-      this.selectedShape.setIsSelected(false);
-      this.displayAllShapes();
-      this.drawText({posX: rect.x, posY: rect.y + 16}, prevText);
-    }else{
-      this.drawText(currentMousePosition);
-    }
+  doubleClick(event: MouseEvent) {
+    this.editText(event);
   }
 
   onMouseDown(event: MouseEvent) {
@@ -126,9 +111,17 @@ export class Canvas {
       this.isShowingSidePanel = false;
     }
     const currentMousePosition = this.getMousePosition(event);
-    this.deSelectPreviouslySelectedShape(this.previouslySelectedShape);
+    this.deselectPreviouslySelectedShape(this.previouslySelectedShape);
     this.displayAllShapes();
 
+    /**Connection starting shape */
+    if (this.currentShape === SHAPES.ARROW) {
+      this.locateSelectedShape(currentMousePosition);
+      if (this.selectedShape) {
+        this.startingShape = this.selectedShape;
+        this.isConnectionStart = true;
+      }
+    }
    
     if (this.currentShape === SHAPES.CURSOR) {
       for (let i = this.shapes.length - 1; i >= 0; i--) {
@@ -138,7 +131,6 @@ export class Canvas {
           break;
         }
       }
-
 
       this.toBeChangeShape = this.selectedShape;
       if (this.selectedShape) {
@@ -188,7 +180,8 @@ export class Canvas {
       const dx = position.posX - this.dragStartPosition.posX;
       const dy = position.posY - this.dragStartPosition.posY;
       this.selectedShape.move(dx, dy);
-      this.dragStartPosition = position; /* Store previous mouse position */
+      /* Store previous mouse position */
+      this.dragStartPosition = position; 
       this.displayAllShapes();
     } else if (this.isErasing) {
       if (this.currentEraser) {
@@ -197,6 +190,7 @@ export class Canvas {
       }
     } else if (this.isDrawing) {
       this.displayAllShapes();
+      this.shapeConnector(event);
       switch (this.currentShape) {
         case SHAPES.RECTANGLE:
           this.drawRectangle(position);
@@ -256,6 +250,16 @@ export class Canvas {
       this.selectedShape = undefined;
     } else if (this.isDrawing) {
       this.isDrawing = false;
+
+      /**Ending connection shape */
+      if (this.currentShape === SHAPES.ARROW) {
+        this.locateSelectedShape(position);
+        if (this.selectedShape) {
+          this.endingShape = this.selectedShape;
+          this.isConnectionEnd = true;
+        }
+      }
+
       switch (this.currentShape) {
         case SHAPES.RECTANGLE:
           this.drawRectangle(position, true);
@@ -295,6 +299,40 @@ export class Canvas {
     /* Clear redo stack if shapes added after undo */
     if (this.shapes.length > this.sizeOfShapesAtUndoStart) {
       this.redoStack = [];
+    }
+  }
+
+  /**Edit text */
+  editText(event: MouseEvent): void {
+    const currentMousePosition = this.getMousePosition(event);
+    this.locateSelectedShape(currentMousePosition);
+    if (this.selectedShape instanceof Text) {
+      const prevText = this.selectedShape.text;
+      const rect: { x: number; y: number; width: number; height: number } =
+        this.selectedShape.boundingBox;
+      this.ctx.clearRect(
+        rect.x - 5,
+        rect.y + 18,
+        rect.width + 10,
+        rect.height + 14
+      );
+      this.shapes.splice(this.selectedShapeIndex!, 1);
+      this.selectedShape.setIsSelected(false);
+      this.displayAllShapes();
+      this.drawText({ posX: rect.x, posY: rect.y + 16 }, prevText);
+    } else {
+      this.drawText(currentMousePosition);
+    }
+  }
+
+  /**Locating selected shape */
+  locateSelectedShape(currentMousePosition: IPoint) {
+    for (let i = this.shapes.length - 1; i >= 0; i--) {
+      if (this.shapes[i].isMouseWithinShape(currentMousePosition)) {
+        this.selectedShape = this.shapes[i];
+        this.selectedShapeIndex = i;
+        break;
+      }
     }
   }
 
@@ -396,7 +434,7 @@ export class Canvas {
           const shape = button.getAttribute("data-shape");
           if (shape) {
             this.currentShape = SHAPES[shape as keyof typeof SHAPES];
-            this.isErasing = (shape === "ERASER");
+            this.isErasing = shape === "ERASER";
             if (this.currentShape !== SHAPES.CURSOR) {
               this.isShowingSidePanel = true;
             } else {
@@ -524,16 +562,43 @@ export class Canvas {
       );
       arrowLine.draw(this.ctx);
     } else {
-      const newArrowLine = ArrowLine.generateArrowLine(
-        { posX: this.startPosition.posX, posY: this.startPosition.posY },
-        { posX: end.posX, posY: end.posY },
-        this.selectedBackgroundColor,
-        this.selectedStrokeColor,
-        this.selectedWidthSize,
-        this.selectedWidthStyle
-      );
-      this.shapes.push(newArrowLine);
-      newArrowLine.draw(this.ctx);
+      if (this.isConnectionStart && this.isConnectionEnd) {
+        let startCenter: IPoint = { posX: 0, posY: 0 };
+        let endCenter: IPoint = { posX: 0, posY: 0 };
+        if (this.startingShape instanceof Rectangle) {
+          startCenter = this.startingShape.getRectangleCenter();
+        } else if (this.startingShape instanceof Circle) {
+          startCenter = this.startingShape.getCenter();
+        }
+
+        if (this.endingShape instanceof Rectangle) {
+          endCenter = this.endingShape.getRectangleCenter();
+        } else if (this.endingShape instanceof Circle) {
+          endCenter = this.endingShape.getCenter();
+        }
+
+        const newArrowLine = ArrowLine.generateArrowLine(
+          startCenter,
+          endCenter,
+          this.selectedBackgroundColor,
+          this.selectedStrokeColor,
+          this.selectedWidthSize,
+          this.selectedWidthStyle
+        );
+
+        this.shapes.push(newArrowLine);
+      } else {
+        const newArrowLine = ArrowLine.generateArrowLine(
+          { posX: this.startPosition.posX, posY: this.startPosition.posY },
+          { posX: end.posX, posY: end.posY },
+          this.selectedBackgroundColor,
+          this.selectedStrokeColor,
+          this.selectedWidthSize,
+          this.selectedWidthStyle
+        );
+        this.shapes.push(newArrowLine);
+        newArrowLine.draw(this.ctx);
+      }
     }
   }
 
@@ -549,12 +614,12 @@ export class Canvas {
     input.style.color = this.selectedStrokeColor;
     input.style.left = `${position.posX}px`;
     input.style.top = `${position.posY}px`;
-    if(prevText){
+    if (prevText) {
       input.value = prevText;
     }
     document.body.appendChild(input);
     input.focus();
-    
+
     const onInputBlur = () => {
       const text = input.value;
       if (text) {
@@ -585,7 +650,7 @@ export class Canvas {
     resizeInput();
     input.addEventListener("blur", onInputBlur);
     function resizeInput() {
-      input.style.width = `${input.value.length + 1}ch`;
+      input.style.width = `${(input.value.length + 1) * 12}px`;
     }
   }
 
@@ -691,7 +756,7 @@ export class Canvas {
     this.ctx.scale(this.scale, this.scale);
     this.ctx.translate(-this.ctx.canvas.width / 2, -this.ctx.canvas.height / 2);
     this.shapes.forEach((shape) => {
-      if (shape) {
+      if (shape instanceof Circle) {
         shape.draw(this.ctx);
       }
     });
@@ -933,7 +998,7 @@ export class Canvas {
   }
   /* Zoom section */
   private zoomIn() {
-    this.scale *= this.scaleFactor; // Use *= instead of += for scaling
+    this.scale *= this.scaleFactor;
     this.zoomPercentage += 10;
     document.querySelector(
       "#zoom__percentage"
@@ -943,7 +1008,7 @@ export class Canvas {
 
   private zoomOut() {
     if (this.zoomPercentage > 10) {
-      this.scale /= this.scaleFactor; // Use /= instead of /=
+      this.scale /= this.scaleFactor;
       this.zoomPercentage -= 10;
       document.querySelector(
         "#zoom__percentage"
@@ -968,7 +1033,7 @@ export class Canvas {
     tempShapes.forEach((shape) => {
       this.shapes.push(shape);
     });
-    this.deSelectPreviouslySelectedShape(
+    this.deselectPreviouslySelectedShape(
       this.selectedShapeForAltering[0].shape
     );
     this.displayAllShapes();
@@ -990,7 +1055,7 @@ export class Canvas {
     tempShapes.forEach((shape) => {
       this.shapes.push(shape);
     });
-    this.deSelectPreviouslySelectedShape(
+    this.deselectPreviouslySelectedShape(
       this.selectedShapeForAltering[0].shape
     );
     this.displayAllShapes();
@@ -1004,7 +1069,7 @@ export class Canvas {
     const temp = this.shapes[selectedIndex];
     this.shapes[selectedIndex] = this.shapes[selectedIndex - 1];
     this.shapes[selectedIndex - 1] = temp;
-    this.deSelectPreviouslySelectedShape(
+    this.deselectPreviouslySelectedShape(
       this.selectedShapeForAltering[0].shape
     );
     this.displayAllShapes();
@@ -1018,7 +1083,7 @@ export class Canvas {
     const temp = this.shapes[selectedIndex];
     this.shapes[selectedIndex] = this.shapes[selectedIndex + 1];
     this.shapes[selectedIndex + 1] = temp;
-    this.deSelectPreviouslySelectedShape(
+    this.deselectPreviouslySelectedShape(
       this.selectedShapeForAltering[0].shape
     );
     this.displayAllShapes();
@@ -1031,6 +1096,11 @@ export class Canvas {
       ?.querySelectorAll("button")
       .forEach((button) => {
         button.addEventListener("click", () => {
+          button.style.backgroundColor = "rgb(216, 216, 216)";
+          button.style.transition = "0.3s";
+          setTimeout(() => {
+            button.style.backgroundColor = "#EFEFEF";
+          }, 700);
           if (button.id === "toBack") {
             this.sendToBack();
           } else if (button.id === "backward") {
@@ -1044,7 +1114,7 @@ export class Canvas {
       });
   }
 
-  private deSelectPreviouslySelectedShape(
+  private deselectPreviouslySelectedShape(
     previouslySelectedShape: Shape | null
   ) {
     if (previouslySelectedShape) {
