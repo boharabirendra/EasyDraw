@@ -77,11 +77,6 @@ export class Canvas {
     this.canvas.addEventListener("mousemove", this.onMouseMove.bind(this));
     this.canvas.addEventListener("mouseup", this.onMouseUp.bind(this));
 
-    // Add touch event listeners
-    this.canvas.addEventListener("touchstart", this.onTouchStart.bind(this));
-    this.canvas.addEventListener("touchmove", this.onTouchMove.bind(this));
-    this.canvas.addEventListener("touchend", this.onTouchEnd.bind(this));
-
     document.addEventListener("click", this.sidePanelHandler.bind(this));
     document.addEventListener("keydown", this.keyboardActions.bind(this));
     this.zoomPercentageEl!.innerHTML = `${this.zoomPercentage}%`;
@@ -98,34 +93,6 @@ export class Canvas {
     this.getDataFromLocalStorage();
   }
 
-
-  onTouchStart(event: TouchEvent) {
-    if (event.touches.length === 1) {
-      const touch = event.touches[0];
-      const mouseEvent = new MouseEvent("mousedown", {
-        clientX: touch.clientX,
-        clientY: touch.clientY,
-      });
-      this.onMouseDown(mouseEvent);
-    }
-  }
-
-  onTouchMove(event: TouchEvent) {
-    if (event.touches.length === 1) {
-      const touch = event.touches[0];
-      const mouseEvent = new MouseEvent("mousemove", {
-        clientX: touch.clientX,
-        clientY: touch.clientY,
-      });
-      this.onMouseMove(mouseEvent);
-    }
-  }
-
-  onTouchEnd(event: TouchEvent) {
-    const mouseEvent = new MouseEvent("mouseup", {});
-    this.onMouseUp(mouseEvent);
-  }
-
   onMouseDown(event: MouseEvent) {
     this.selectedShapeForAltering = [];
     this.selectedShape = undefined;
@@ -135,6 +102,7 @@ export class Canvas {
     const currentMousePosition = this.getMousePosition(event);
     this.deSelectPreviouslySelectedShape(this.previouslySelectedShape);
     this.displayAllShapes();
+
     if (this.currentShape === SHAPES.CURSOR) {
       for (let i = this.shapes.length - 1; i >= 0; i--) {
         if (this.shapes[i].isMouseWithinShape(currentMousePosition)) {
@@ -143,7 +111,6 @@ export class Canvas {
           break;
         }
       }
-
       this.toBeChangeShape = this.selectedShape;
       if (this.selectedShape) {
         this.previouslySelectedShape = this.selectedShape;
@@ -400,7 +367,7 @@ export class Canvas {
           const shape = button.getAttribute("data-shape");
           if (shape) {
             this.currentShape = SHAPES[shape as keyof typeof SHAPES];
-            this.isErasing = shape === "ERASER";
+            this.isErasing = (shape === "ERASER");
             if (this.currentShape !== SHAPES.CURSOR) {
               this.isShowingSidePanel = true;
             } else {
@@ -413,6 +380,7 @@ export class Canvas {
             this.currentShape = SHAPES.CURSOR;
             this.isErasing = false;
             adjustToolSection();
+            localStorage.removeItem("savedData");
           }
         });
       });
@@ -553,19 +521,16 @@ export class Canvas {
     input.style.left = `${position.posX}px`;
     input.style.top = `${position.posY}px`;
     input.style.maxWidth = "50rem";
-
     document.body.appendChild(input);
     input.focus();
 
     const onInputBlur = () => {
       const text = input.value;
       if (text) {
-        const ctx = this.canvas.getContext("2d");
-        if (ctx) {
-          ctx.font = '24px "Gloria Hallelujah", sans-serif';
-          const textWidth = ctx.measureText(text).width;
-          const textHeight = parseInt(ctx.font);
-
+        if (this.ctx) {
+          this.ctx.font = '24px "Virgil", sans-serif';
+          const textWidth = this.ctx.measureText(text).width;
+          const textHeight = parseInt(this.ctx.font);
           const boundingBox = {
             x: position.posX,
             y: position.posY - textHeight,
@@ -573,10 +538,14 @@ export class Canvas {
             height: textHeight,
           };
 
-          const newText = new Text(position, text, boundingBox, this.selectedStrokeColor);
+          const newText = new Text(
+            position,
+            text,
+            boundingBox,
+            this.selectedStrokeColor
+          );
           this.shapes.push(newText);
-          this.clearCanvas();
-          this.shapes.forEach((shape) => shape.draw(this.ctx));
+          this.displayAllShapes();
         }
       }
       document.body.removeChild(input);
@@ -584,11 +553,6 @@ export class Canvas {
     input.addEventListener("input", resizeInput);
     resizeInput();
     input.addEventListener("blur", onInputBlur);
-    input.addEventListener("keypress", (e) => {
-      if (e.key === "Enter") {
-        input.blur();
-      }
-    });
     function resizeInput() {
       input.style.width = `${input.value.length + 1}ch`;
     }
@@ -813,6 +777,26 @@ export class Canvas {
   }
 
   /**Shape width change */
+  private changeWidthOfShape() {
+    const strokeWidthContainer = document.querySelector(
+      ".stroke__width"
+    ) as HTMLDivElement;
+    strokeWidthContainer.querySelectorAll("button").forEach((button) => {
+      button.addEventListener("click", () => {
+        const widthType = button.id;
+        strokeWidthContainer
+          .querySelectorAll("button")
+          .forEach((button) => (button.style.border = "none"));
+        button.style.border = "1px solid black";
+        this.selectedWidthSize = this.widthSelector(widthType);
+        if (this.currentShape === SHAPES.DRAW) {
+          this.drawingWidth = this.widthSelector(widthType);
+        }
+        this.updateSelectedShapeWidth(widthType);
+      });
+    });
+  }
+
   private updateSelectedShapeWidth(widthType: string) {
     if (
       this.toBeChangeShape &&
@@ -843,26 +827,6 @@ export class Canvas {
       this.toBeChangeShape.strokeWidth = this.widthSelector(widthType);
       this.displayAllShapes();
     }
-  }
-
-  private changeWidthOfShape() {
-    const strokeWidthContainer = document.querySelector(
-      ".stroke__width"
-    ) as HTMLDivElement;
-    strokeWidthContainer.querySelectorAll("button").forEach((button) => {
-      button.addEventListener("click", () => {
-        const widthType = button.id;
-        strokeWidthContainer
-          .querySelectorAll("button")
-          .forEach((button) => (button.style.border = "none"));
-        button.style.border = "1px solid black";
-        this.selectedWidthSize = this.widthSelector(widthType);
-        if (this.currentShape === SHAPES.DRAW) {
-          this.drawingWidth = this.widthSelector(widthType);
-        }
-        this.updateSelectedShapeWidth(widthType);
-      });
-    });
   }
 
   private widthSelector(widthType: string): number {
@@ -1222,7 +1186,12 @@ export class Canvas {
           );
         } else if (shape.shapeType === SHAPES.TEXT) {
           this.shapes.push(
-            new Text(shape.position, shape.text, shape.boundingBox, shape.strokeColor)
+            new Text(
+              shape.position,
+              shape.text,
+              shape.boundingBox,
+              shape.strokeColor
+            )
           );
         } else if (shape.shapeType === SHAPES.DRAW) {
           const newDraw = new Draw(

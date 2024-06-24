@@ -22,6 +22,7 @@ export class Rectangle extends Shape {
   strokeColor: string;
   strokeWidth: number;
   strokeStyle: number[];
+ 
 
   constructor(
     position: IPoint,

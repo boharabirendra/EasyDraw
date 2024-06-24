@@ -116,7 +116,7 @@ body {
   display: flex;
   flex-direction: column;
   row-gap: 1.75rem;
-  padding: 0.75rem;
+  padding: 0.75rem 1rem;
   overflow-y: auto;
   box-shadow: 0px 0px 0.9310142993927002px 0px rgba(0, 0, 0, 0.17),
     0px 0px 3.1270833015441895px 0px rgba(0, 0, 0, 0.08),
@@ -124,7 +124,7 @@ body {
   border-radius: 0.5rem;
   top: 12%;
   left: 2%;
-  width: 170px;
+  width: 200px;
   cursor: default;
   background-color: white;
   display: none;

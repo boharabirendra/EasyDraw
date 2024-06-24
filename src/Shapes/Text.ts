@@ -48,6 +48,9 @@ export class Text extends Shape {
       width: this.boundingBox.width + 10,
       height: this.boundingBox.height + 14,
     };
+
+    selectionIndicateRectangle(ctx, position, dimension);
+
     const leftTopCircleCenter: IPoint = getLeftTopCircleCenter(position);
     const leftBottomCircle: IPoint = getLeftBottomCircleCenter(
       position,
@@ -78,7 +81,6 @@ export class Text extends Shape {
       rightBottomCircle,
       SELECTED_SHAPE_INDICATOR_CIRCLE_RADIUS
     );
-    selectionIndicateRectangle(ctx, position, dimension);
   }
 
   setIsSelected(value: boolean): void {

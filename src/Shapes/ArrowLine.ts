@@ -30,7 +30,7 @@ export class ArrowLine extends Shape {
   }
 
   draw(ctx: CanvasRenderingContext2D) {
-    const headLength = 20;
+    const headLength = 15;
     const dx = this.end.posX - this.position.posX;
     const dy = this.end.posY - this.position.posY;
     const angle = Math.atan2(dy, dx);
