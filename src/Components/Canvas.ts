@@ -756,7 +756,7 @@ export class Canvas {
     this.ctx.scale(this.scale, this.scale);
     this.ctx.translate(-this.ctx.canvas.width / 2, -this.ctx.canvas.height / 2);
     this.shapes.forEach((shape) => {
-      if (shape instanceof Circle) {
+      if (shape) {
         shape.draw(this.ctx);
       }
     });
