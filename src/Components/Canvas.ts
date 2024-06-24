@@ -76,6 +76,7 @@ export class Canvas {
     this.canvas.addEventListener("mousedown", this.onMouseDown.bind(this));
     this.canvas.addEventListener("mousemove", this.onMouseMove.bind(this));
     this.canvas.addEventListener("mouseup", this.onMouseUp.bind(this));
+    this.canvas.addEventListener("dblclick", this.doubleClick.bind(this));
 
     document.addEventListener("click", this.sidePanelHandler.bind(this));
     document.addEventListener("keydown", this.keyboardActions.bind(this));
@@ -93,6 +94,31 @@ export class Canvas {
     this.getDataFromLocalStorage();
   }
 
+
+  /**Edit text */
+  doubleClick(event:MouseEvent){
+    const currentMousePosition = this.getMousePosition(event);
+    for (let i = this.shapes.length - 1; i >= 0; i--) {
+      if (this.shapes[i].isMouseWithinShape(currentMousePosition)) {
+        this.selectedShape = this.shapes[i];
+        this.selectedShapeIndex = i;
+        break;
+      }
+    }
+    
+    if(this.selectedShape instanceof Text){ 
+      const prevText = this.selectedShape.text;
+      const rect: { x: number; y: number; width: number; height: number } = this.selectedShape.boundingBox;
+      this.ctx.clearRect(rect.x - 5, rect.y + 18, rect.width + 10, rect.height + 14);
+      this.shapes.splice(this.selectedShapeIndex!, 1);
+      this.selectedShape.setIsSelected(false);
+      this.displayAllShapes();
+      this.drawText({posX: rect.x, posY: rect.y + 16}, prevText);
+    }else{
+      this.drawText(currentMousePosition);
+    }
+  }
+
   onMouseDown(event: MouseEvent) {
     this.selectedShapeForAltering = [];
     this.selectedShape = undefined;
@@ -103,6 +129,7 @@ export class Canvas {
     this.deSelectPreviouslySelectedShape(this.previouslySelectedShape);
     this.displayAllShapes();
 
+   
     if (this.currentShape === SHAPES.CURSOR) {
       for (let i = this.shapes.length - 1; i >= 0; i--) {
         if (this.shapes[i].isMouseWithinShape(currentMousePosition)) {
@@ -111,6 +138,8 @@ export class Canvas {
           break;
         }
       }
+
+
       this.toBeChangeShape = this.selectedShape;
       if (this.selectedShape) {
         this.previouslySelectedShape = this.selectedShape;
@@ -509,7 +538,7 @@ export class Canvas {
   }
 
   /* Draw text */
-  private drawText(position: IPoint) {
+  private drawText(position: IPoint, prevText?: string) {
     const input = document.createElement("input");
     input.type = "text";
     input.style.position = "absolute";
@@ -520,10 +549,12 @@ export class Canvas {
     input.style.color = this.selectedStrokeColor;
     input.style.left = `${position.posX}px`;
     input.style.top = `${position.posY}px`;
-    input.style.maxWidth = "50rem";
+    if(prevText){
+      input.value = prevText;
+    }
     document.body.appendChild(input);
     input.focus();
-
+    
     const onInputBlur = () => {
       const text = input.value;
       if (text) {
@@ -1138,7 +1169,6 @@ export class Canvas {
     const savedData = localStorage.getItem("savedData");
     if (savedData) {
       const shapes: any[] = JSON.parse(savedData);
-      console.log(shapes);
       shapes.forEach((shape) => {
         if (shape.shapeType === SHAPES.RECTANGLE) {
           this.shapes.push(

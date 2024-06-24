@@ -71,6 +71,7 @@ export class Circle extends Shape {
       width: this.radius * 2,
       height: this.radius * 2,
     };
+
     selectionIndicateRectangle(ctx, position, dimension);
     const leftTopCircleCenter: IPoint = getLeftTopCircleCenter(position);
     const leftBottomCircle: IPoint = getLeftBottomCircleCenter(

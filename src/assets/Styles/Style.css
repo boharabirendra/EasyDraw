@@ -1,18 +1,16 @@
 @font-face {
-  font-family: 'Virgil';
-  src: url('../fonts/Virgil.woff2') format('woff2');
+  font-family: "Virgil";
+  src: url("../fonts/Virgil.woff2") format("woff2");
   font-weight: normal;
   font-style: normal;
 }
-
-canvas{
+canvas {
   font-family: "Virgil";
 }
 
-
 * {
-  margin: 0px;
-  padding: 0px;
+  margin: 0;
+  padding: 0;
   box-sizing: border-box;
 }
 
@@ -30,14 +28,14 @@ body {
   left: 50%;
   transform: translate(-50%, -50%);
   padding: 6px 10px;
-  box-shadow: 0px 0px 0.9310142993927002px 0px rgba(0, 0, 0, 0.17),
-    0px 0px 3.1270833015441895px 0px rgba(0, 0, 0, 0.08),
-    0px 7px 14px 0px rgba(0, 0, 0, 0.05);
+  box-shadow: 0px 0px 0.9310142994px 0px rgba(0, 0, 0, 0.17), 0px 0px 3.1270833015px 0px rgba(0, 0, 0, 0.08), 0px 7px 14px 0px rgba(0, 0, 0, 0.05);
   border-radius: 10px;
   background-color: white;
 }
-
-.toolbar_icon button {
+.toolbar_container button {
+  transition: background-color 0.3s ease;
+}
+.toolbar_container .toolbar_icon button {
   cursor: pointer;
   background-color: transparent;
   border: none;
@@ -45,13 +43,8 @@ body {
   border-radius: 10px;
   box-shadow: 0px 0px 0.5 gray;
 }
-
-.toolbar_icon button:hover {
+.toolbar_container .toolbar_icon button:hover {
   background-color: #e0dfff;
-}
-
-.toolbar_container button {
-  transition: background-color 0.3s ease;
 }
 
 .left_bottom_container {
@@ -62,8 +55,7 @@ body {
   left: 2%;
   cursor: pointer;
 }
-
-.zoom {
+.left_bottom_container .zoom {
   background-color: #ececf4;
   border-radius: 5px;
   display: flex;
@@ -71,45 +63,35 @@ body {
   column-gap: 0.5rem;
   justify-content: center;
 }
-
-.redo_undo {
+.left_bottom_container .zoom__out, .left_bottom_container .zoom__in, .left_bottom_container .zoom__percentage {
+  opacity: 0.5;
+  cursor: pointer;
+  border: none;
+  background-color: transparent;
+}
+.left_bottom_container .zoom__out, .left_bottom_container .zoom__in {
+  padding: 8px 14px;
+}
+.left_bottom_container .zoom__percentage {
+  padding-bottom: 3px;
+}
+.left_bottom_container .redo_undo {
   display: flex;
   gap: 10px;
   background-color: #ececf4;
   border-radius: 5px;
 }
-
-.zoom__out,
-.zoom__in,
-.zoom__percentage {
-  opacity: 0.5;
-  cursor: pointer;
-}
-
-.zoom__out,
-.zoom__in{
-  padding: 8px 14px;
-}
-
-.zoom__percentage {
-  padding-bottom: 3px;
-}
-
-.redo_undo button,
-.zoom__out,
-.zoom__in,
-.zoom__percentage {
+.left_bottom_container .redo_undo button,
+.left_bottom_container .redo_undo img {
   border: none;
   background-color: transparent;
 }
-
-.redo_undo img {
+.left_bottom_container .redo_undo img {
   width: 36px;
   cursor: pointer;
   padding: 6px 10px;
   border-radius: 5px;
 }
-
 
 .panelColumn {
   position: absolute;
@@ -118,9 +100,7 @@ body {
   row-gap: 1.75rem;
   padding: 0.75rem 1rem;
   overflow-y: auto;
-  box-shadow: 0px 0px 0.9310142993927002px 0px rgba(0, 0, 0, 0.17),
-    0px 0px 3.1270833015441895px 0px rgba(0, 0, 0, 0.08),
-    0px 7px 14px 0px rgba(0, 0, 0, 0.05);
+  box-shadow: 0px 0px 0.9310142994px 0px rgba(0, 0, 0, 0.17), 0px 0px 3.1270833015px 0px rgba(0, 0, 0, 0.08), 0px 7px 14px 0px rgba(0, 0, 0, 0.05);
   border-radius: 0.5rem;
   top: 12%;
   left: 2%;
@@ -129,11 +109,9 @@ body {
   background-color: white;
   display: none;
 }
-
-.panel__section{
+.panelColumn .panel__section {
   margin-bottom: 1rem;
 }
-
 .panelColumn h3 {
   margin: 0;
   margin-bottom: 0.45rem;
@@ -142,50 +120,46 @@ body {
   font-weight: 400;
   display: block;
 }
-
-.color-picker__button {
+.panelColumn .color-picker__button {
   width: 1.35rem;
   height: 1.35rem;
   border-radius: 0.25rem;
   cursor: pointer;
   border: 1px solid #d6d6d6;
 }
-
-.stroke__width button {
+.panelColumn .stroke__width button {
   padding: 0.75rem;
   border-radius: 0.25rem;
   background-color: "#EFEFEF";
   border: none;
   cursor: pointer;
 }
-
-
-.stroke__style button, .layer__container button, .actions button{
+.panelColumn .stroke__style button,
+.panelColumn .layer__container button,
+.panelColumn .actions button {
   padding: 0.3rem 0.5rem;
   border-radius: 0.25rem;
   background-color: "#EFEFEF";
   border: none;
   cursor: pointer;
 }
-
-.thin div {
+.panelColumn .thin div,
+.panelColumn .bold div,
+.panelColumn .extra__bold div {
+  width: 10px;
+  border-radius: 4px;
+}
+.panelColumn .thin div {
   height: 2px;
-  width: 10px;
   background-color: rgb(216, 216, 216);
-  border-radius: 4px;
 }
-.bold div {
+.panelColumn .bold div {
   height: 3px;
-  width: 10px;
   background-color: rgb(114, 114, 114);
-  border-radius: 4px;
 }
-.extra__bold div {
+.panelColumn .extra__bold div {
   height: 4px;
-  width: 10px;
   background-color: rgb(37, 36, 36);
-  border-radius: 4px;
 }
 
-
-
+/*# sourceMappingURL=Style.css.map */
