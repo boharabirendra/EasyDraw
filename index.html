@@ -12,7 +12,6 @@
     <link rel="stylesheet" href="/src/assets/Styles/Style.css" />
   </head>
   <body>
-
     <div class="toolbar_container">
       <div id="toolbar_container" class="toolbar_content">
         <div class="toolbar_icon">
@@ -63,7 +62,7 @@
       </div>
     </div>
     <div class="left_bottom_container">
-      <div class="zoom" id="zoom">
+      <!-- <div class="zoom" id="zoom">
         <button id="zoom__out" class="zoom__out" title="Zoom out">
           <img src="./src/assets/Images/minus.png" alt="zoom out" />
         </button>
@@ -75,7 +74,7 @@
         <button id="zoom__in" class="zoom__in" title="Zoom in">
           <img src="./src/assets/Images/plus.png" alt="Zoom in" />
         </button>
-      </div>
+      </div> -->
       <div class="redo_undo" id="redo_undo">
         <button id="undoBtn" title="Undo">
           <img src="./src/assets/Images/undo.png" alt="Undo" />
@@ -216,6 +215,19 @@
         </div>
       </div>
     </div>
+    <div class="shortcut_key_container">
+        <div>
+          <button id="shortcut">Shortcut</button>
+        </div>
+        <div id="shortcut_items">
+          <ol>
+            <li>Ctrl + z (Undo)</li>
+            <li>Ctrl + y (Redo)</li>
+            <li>Delete key to selected shape</li>
+            <li>Double click to add text</li>
+          </ol>
+        </div>
+    </div>  
     <div id="app">
       <canvas id="canvas"></canvas>
     </div>

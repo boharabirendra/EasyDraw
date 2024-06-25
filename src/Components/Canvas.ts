@@ -50,9 +50,9 @@ export class Canvas {
   private drawingColor: string = "black";
   private drawingWidth: number = THIN_LINE_WIDTH;
   private scale: number = 1;
-  private scaleFactor: number = 1.1;
-  private zoomPercentage: number = 100;
-  private zoomPercentageEl: HTMLButtonElement | null = null;
+  // private scaleFactor: number = 1.1;
+  // private zoomPercentage: number = 100;
+  // private zoomPercentageEl: HTMLButtonElement | null = null;
   private previouslySelectedShape: Shape | null = null;
   private isShowingSidePanel: boolean = false;
   private selectedStrokeColor: string = "";
@@ -71,9 +71,9 @@ export class Canvas {
     this.canvas.height = DIMENSION.CANVAS_HEIGHT;
     this.ctx = this.canvas.getContext("2d") as CanvasRenderingContext2D;
     this.ctx.font = '24px "Virgil", sans-serif';
-    this.zoomPercentageEl = document.querySelector(
-      "#zoom__percentage"
-    ) as HTMLButtonElement;
+    // this.zoomPercentageEl = document.querySelector(
+    //   "#zoom__percentage"
+    // ) as HTMLButtonElement;
     this.init();
   }
 
@@ -89,7 +89,7 @@ export class Canvas {
 
     document.addEventListener("click", this.sidePanelHandler.bind(this));
     document.addEventListener("keydown", this.keyboardActions.bind(this));
-    this.zoomPercentageEl!.innerHTML = `${this.zoomPercentage}%`;
+    // this.zoomPercentageEl!.innerHTML = `${this.zoomPercentage}%`;
     /* Function call */
     highlightCurrentSelectedTool();
     this.toolBarManager();
@@ -98,9 +98,10 @@ export class Canvas {
     this.changeWidthStyleOfShape();
     this.layerManager();
     this.undoRedoManager();
-    this.zoomManager();
+    // this.zoomManager();
     this.handleActions();
     this.getDataFromLocalStorage();
+    this.handleShortcut();
   }
 
   onTouchStart(event: TouchEvent) {
@@ -773,19 +774,19 @@ export class Canvas {
       this.deleteSelectedShapes();
     }
     /* zoom in and zoom out */
-    if (event.ctrlKey) {
-      switch (event.key) {
-        case "+":
-        case "=":
-          this.zoomIn();
-          event.preventDefault();
-          break;
-        case "-":
-          this.zoomOut();
-          event.preventDefault();
-          break;
-      }
-    }
+    // if (event.ctrlKey) {
+    //   switch (event.key) {
+    //     case "+":
+    //     case "=":
+    //       this.zoomIn();
+    //       event.preventDefault();
+    //       break;
+    //     case "-":
+    //       this.zoomOut();
+    //       event.preventDefault();
+    //       break;
+    //   }
+    // }
   }
 
   private deleteSelectedShapes() {
@@ -1089,25 +1090,25 @@ export class Canvas {
     }
   }
   /* Zoom section */
-  private zoomIn() {
-    this.scale *= this.scaleFactor;
-    this.zoomPercentage += 10;
-    document.querySelector(
-      "#zoom__percentage"
-    )!.innerHTML = `${this.zoomPercentage}%`;
-    this.displayAllShapes();
-  }
+  // private zoomIn() {
+  //   this.scale *= this.scaleFactor;
+  //   this.zoomPercentage += 10;
+  //   document.querySelector(
+  //     "#zoom__percentage"
+  //   )!.innerHTML = `${this.zoomPercentage}%`;
+  //   this.displayAllShapes();
+  // }
 
-  private zoomOut() {
-    if (this.zoomPercentage > 10) {
-      this.scale /= this.scaleFactor;
-      this.zoomPercentage -= 10;
-      document.querySelector(
-        "#zoom__percentage"
-      )!.innerHTML = `${this.zoomPercentage}%`;
-      this.displayAllShapes();
-    }
-  }
+  // private zoomOut() {
+  //   if (this.zoomPercentage > 10) {
+  //     this.scale /= this.scaleFactor;
+  //     this.zoomPercentage -= 10;
+  //     document.querySelector(
+  //       "#zoom__percentage"
+  //     )!.innerHTML = `${this.zoomPercentage}%`;
+  //     this.displayAllShapes();
+  //   }
+  // }
 
   /**INDEXING SHAPES */
   private sendToBack() {
@@ -1247,36 +1248,36 @@ export class Canvas {
     }
   }
 
-  /**Zoom section */
-  private zoomManager() {
-    document
-      .querySelector("#zoom")
-      ?.querySelectorAll("button")
-      .forEach((button) => {
-        button.addEventListener("click", () => {
-          button.style.transition = "0.3s";
-          if (button.id === "zoom__out") {
-            button.style.border = "1px solid blue";
-            button.style.borderTopLeftRadius = "5px";
-            button.style.borderBottomLeftRadius = "5px";
-            this.zoomOut();
-          } else if (button.id === "zoom__in") {
-            button.style.border = "1px solid blue";
-            button.style.borderTopRightRadius = "5px";
-            button.style.borderBottomRightRadius = "5px";
-            this.zoomIn();
-          } else if (button.id === "zoom__percentage") {
-            this.scale = 1;
-            this.zoomPercentage = 100;
-            this.zoomPercentageEl!.innerHTML = `${this.zoomPercentage}%`;
-            this.displayAllShapes();
-          }
-          setTimeout(() => {
-            button.style.border = "none";
-          }, 700);
-        });
-      });
-  }
+  // /**Zoom section */
+  // private zoomManager() {
+  //   document
+  //     .querySelector("#zoom")
+  //     ?.querySelectorAll("button")
+  //     .forEach((button) => {
+  //       button.addEventListener("click", () => {
+  //         button.style.transition = "0.3s";
+  //         if (button.id === "zoom__out") {
+  //           button.style.border = "1px solid blue";
+  //           button.style.borderTopLeftRadius = "5px";
+  //           button.style.borderBottomLeftRadius = "5px";
+  //           this.zoomOut();
+  //         } else if (button.id === "zoom__in") {
+  //           button.style.border = "1px solid blue";
+  //           button.style.borderTopRightRadius = "5px";
+  //           button.style.borderBottomRightRadius = "5px";
+  //           this.zoomIn();
+  //         } else if (button.id === "zoom__percentage") {
+  //           this.scale = 1;
+  //           this.zoomPercentage = 100;
+  //           this.zoomPercentageEl!.innerHTML = `${this.zoomPercentage}%`;
+  //           this.displayAllShapes();
+  //         }
+  //         setTimeout(() => {
+  //           button.style.border = "none";
+  //         }, 700);
+  //       });
+  //     });
+  // }
 
   /*Undo & Redo */
   private undoRedoManager() {
@@ -1402,5 +1403,23 @@ export class Canvas {
       });
       this.displayAllShapes();
     }
+  }
+
+  /**Shortcut section */
+  private handleShortcut(){
+    const shortcutItemsEl = document.querySelector("#shortcut_items") as HTMLDivElement;
+    shortcutItemsEl.style.display = "none";
+    let flag = false;
+    const shortcutEl = document.querySelector("#shortcut") as HTMLButtonElement;
+    shortcutEl.addEventListener("click", ()=>{
+      if(flag){
+        shortcutItemsEl.style.display = "none";
+        flag = false;
+      }else{
+        shortcutItemsEl.style.display = "block";
+        flag = true;
+      }
+    })
+    
   }
 }
