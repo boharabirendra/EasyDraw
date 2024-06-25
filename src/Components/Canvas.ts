@@ -7,6 +7,7 @@ import {
   DOT_WIDTH,
   DRAW_BOLD_LINE_WIDTH,
   DRAW_EXTRA_BOLD_LINE_WIDTH,
+  DRAW_THIN_LINE_WIDTH,
   EXTRA_BOLD_LINE_WIDTH,
   THIN_LINE_WIDTH,
 } from "../Constants/Constants";
@@ -82,6 +83,10 @@ export class Canvas {
     this.canvas.addEventListener("mouseup", this.onMouseUp.bind(this));
     this.canvas.addEventListener("dblclick", this.doubleClick.bind(this));
 
+    this.canvas.addEventListener("touchstart", this.onTouchStart.bind(this));
+    this.canvas.addEventListener("touchmove", this.onTouchMove.bind(this));
+    this.canvas.addEventListener("touchend", this.onTouchEnd.bind(this));
+
     document.addEventListener("click", this.sidePanelHandler.bind(this));
     document.addEventListener("keydown", this.keyboardActions.bind(this));
     this.zoomPercentageEl!.innerHTML = `${this.zoomPercentage}%`;
@@ -98,12 +103,27 @@ export class Canvas {
     this.getDataFromLocalStorage();
   }
 
+  onTouchStart(event: TouchEvent) {
+    event.preventDefault();
+    this.onMouseDown(event);
+  }
+
+  onTouchMove(event: TouchEvent) {
+    event.preventDefault();
+    this.onMouseMove(event);
+  }
+
+  onTouchEnd(event: TouchEvent) {
+    event.preventDefault();
+    this.onMouseUp(event);
+  }
+
   /**Edit text */
-  doubleClick(event: MouseEvent) {
+  doubleClick(event: any) {
     this.editText(event);
   }
 
-  onMouseDown(event: MouseEvent) {
+  onMouseDown(event: any) {
     this.selectedShapeForAltering = [];
     this.selectedShape = undefined;
     if (this.currentShape !== SHAPES.DRAW) {
@@ -168,13 +188,13 @@ export class Canvas {
     }
   }
 
-  onMouseMove(event: MouseEvent) {
+  onMouseMove(event: any) {
     const position = this.getMousePosition(event);
     /* Changing mouse shape */
     this.changeMouseShape(position, event);
     this.shapeConnector(event);
     this.eraseShape(event);
-
+    console.log(position);
     if (this.isDragging && this.selectedShape) {
       const dx = position.posX - this.dragStartPosition.posX;
       const dy = position.posY - this.dragStartPosition.posY;
@@ -205,6 +225,7 @@ export class Canvas {
           break;
         case SHAPES.DRAW:
           if (this.currentDrawing) {
+            this.currentDrawing.strokeWidth = this.selectedWidthSize;
             this.currentDrawing.addPoint(position);
             this.currentDrawing.draw(this.ctx);
           }
@@ -237,7 +258,7 @@ export class Canvas {
     this.activateRedoUndoBtn(this.shapes, this.redoStack);
   }
 
-  onMouseUp(event: MouseEvent) {
+  onMouseUp(event: any) {
     const position = this.getMousePosition(event);
     if (this.isDragging) {
       this.isDragging = false;
@@ -290,6 +311,7 @@ export class Canvas {
       /**Ending connection shape */
       if (this.selectedShape?.shapeType === SHAPES.ARROW) {
         this.shapeConnector(event);
+
         if (this.resizeEdge === "start") {
           if (this.selectedShape instanceof ArrowLine) {
             if (this.resizeConnectionShape instanceof Rectangle) {
@@ -315,6 +337,7 @@ export class Canvas {
           }
         }
       }
+
       this.isResizing = false;
       this.resizeEdge = null;
     }
@@ -325,7 +348,7 @@ export class Canvas {
   }
 
   /**Edit text */
-  editText(event: MouseEvent): void {
+  editText(event: any): void {
     const currentMousePosition = this.getMousePosition(event);
     this.locateSelectedShape(currentMousePosition);
     if (this.selectedShape instanceof Text) {
@@ -360,7 +383,7 @@ export class Canvas {
   }
 
   /*Change mouse shape */
-  private changeMouseShape(position: IPoint, event: MouseEvent) {
+  private changeMouseShape(position: IPoint, event: any) {
     if (this.currentShape === SHAPES.CURSOR) {
       const tempSelectedShape = this.shapes.find((shape) => {
         if (shape) {
@@ -393,7 +416,7 @@ export class Canvas {
   }
 
   /**Connector arrow line */
-  private shapeConnector(event: MouseEvent) {
+  private shapeConnector(event: any) {
     const currentMousePosition = this.getMousePosition(event);
     if (
       this.currentShape === SHAPES.ARROW ||
@@ -416,7 +439,7 @@ export class Canvas {
     }
   }
 
-  private eraseShape(event: MouseEvent) {
+  private eraseShape(event: any) {
     const currentMousePosition = this.getMousePosition(event);
     let shapeIndex: number | null = null;
     if (this.currentShape === SHAPES.ERASER) {
@@ -444,11 +467,23 @@ export class Canvas {
     this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
   }
 
-  private getMousePosition(event: MouseEvent): IPoint {
-    return {
-      posX: event.offsetX,
-      posY: event.offsetY,
+  private getMousePosition(event: any): IPoint {
+    let currentPosition: IPoint = {
+      posX: 0,
+      posY: 0,
     };
+    if ("touches" in event) {
+      currentPosition = {
+        posX: event.changedTouches[0].clientX,
+        posY: event.changedTouches[0].clientY,
+      };
+    } else {
+      currentPosition = {
+        posX: event.offsetX,
+        posY: event.offsetY,
+      };
+    }
+    return currentPosition;
   }
 
   /* Tool bar selection */
@@ -461,6 +496,11 @@ export class Canvas {
           const shape = button.getAttribute("data-shape");
           if (shape) {
             this.currentShape = SHAPES[shape as keyof typeof SHAPES];
+            if (this.currentShape === SHAPES.DRAW) {
+              this.handleDrawThickness();
+            } else {
+              this.handleShapeThickness();
+            }
             this.isErasing = shape === "ERASER";
             if (this.currentShape !== SHAPES.CURSOR) {
               this.isShowingSidePanel = true;
@@ -633,13 +673,14 @@ export class Canvas {
 
   /* Draw text */
   private drawText(position: IPoint, prevText?: string) {
-    const input = document.createElement("input");
-    input.type = "text";
+    const input = document.createElement("textArea") as HTMLTextAreaElement;
     input.style.position = "absolute";
     input.style.border = "none";
     input.style.outline = "none";
+    input.style.resize = "none";
     input.style.fontFamily = "Virgil, sans-serif";
     input.style.fontSize = "24px";
+    input.style.textWrap = "wrap";
     input.style.color = this.selectedStrokeColor;
     input.style.left = `${position.posX}px`;
     input.style.top = `${position.posY}px`;
@@ -679,7 +720,7 @@ export class Canvas {
     resizeInput();
     input.addEventListener("blur", onInputBlur);
     function resizeInput() {
-      input.style.width = `${(input.value.length + 1) * 13}px`;
+      input.style.width = `${(input.value.length + 1) * 14}px`;
     }
   }
 
@@ -984,6 +1025,28 @@ export class Canvas {
     });
   }
 
+  /**Handle draw thickness */
+  private handleDrawThickness() {
+    if (this.selectedWidthSize === 1) {
+      this.selectedWidthSize = DRAW_THIN_LINE_WIDTH;
+    } else if (this.selectedWidthSize === 3) {
+      this.selectedWidthSize = DRAW_BOLD_LINE_WIDTH;
+    } else if (this.selectedWidthSize === 5) {
+      this.selectedWidthSize = DRAW_EXTRA_BOLD_LINE_WIDTH;
+    }
+  }
+
+  /**Handle other shape thickness */
+  private handleShapeThickness() {
+    if (this.selectedWidthSize === DRAW_THIN_LINE_WIDTH) {
+      this.selectedWidthSize = THIN_LINE_WIDTH;
+    } else if (this.selectedWidthSize === BOLD_LINE_WIDTH) {
+      this.selectedWidthSize = DRAW_BOLD_LINE_WIDTH;
+    } else if (this.selectedWidthSize === DRAW_EXTRA_BOLD_LINE_WIDTH) {
+      this.selectedWidthSize = EXTRA_BOLD_LINE_WIDTH;
+    }
+  }
+
   private updateSelectedShapeWidthStyle(widthStyle: string) {
     if (
       this.toBeChangeShape &&
@@ -1191,13 +1254,16 @@ export class Canvas {
       ?.querySelectorAll("button")
       .forEach((button) => {
         button.addEventListener("click", () => {
-          button.style.border = "1px solid blue";
-          button.style.borderTopLeftRadius = "5px";
-          button.style.borderBottomLeftRadius = "5px";
           button.style.transition = "0.3s";
           if (button.id === "zoom__out") {
+            button.style.border = "1px solid blue";
+            button.style.borderTopLeftRadius = "5px";
+            button.style.borderBottomLeftRadius = "5px";
             this.zoomOut();
           } else if (button.id === "zoom__in") {
+            button.style.border = "1px solid blue";
+            button.style.borderTopRightRadius = "5px";
+            button.style.borderBottomRightRadius = "5px";
             this.zoomIn();
           } else if (button.id === "zoom__percentage") {
             this.scale = 1;
@@ -1220,12 +1286,14 @@ export class Canvas {
       .forEach((button) => {
         button.addEventListener("click", () => {
           button.style.border = "1px solid blue";
-          button.style.borderTopLeftRadius = "5px";
-          button.style.borderBottomLeftRadius = "5px";
           button.style.transition = "0.3s";
           if (button.id === "undoBtn") {
+            button.style.borderTopLeftRadius = "5px";
+            button.style.borderBottomLeftRadius = "5px";
             this.undo();
           } else if (button.id === "redoBtn") {
+            button.style.borderTopRightRadius = "5px";
+            button.style.borderBottomRightRadius = "5px";
             this.redo();
           }
           setTimeout(() => {

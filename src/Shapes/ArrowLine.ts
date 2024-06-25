@@ -30,6 +30,7 @@ export class ArrowLine extends Shape {
   }
 
   setPosition(newPosition:IPoint):void{
+    console.log(this.position, newPosition  );
     this.position.posX = newPosition.posX;
     this.position.posY = newPosition.posY;
   }

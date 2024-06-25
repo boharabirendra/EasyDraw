@@ -37,6 +37,7 @@ export class Circle extends Shape {
   }
 
   draw(ctx: CanvasRenderingContext2D) {
+    console.log()
     ctx.save();
     ctx.beginPath();
     ctx.arc(

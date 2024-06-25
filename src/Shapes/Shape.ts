@@ -16,5 +16,5 @@ export abstract class Shape {
     abstract reSize(...args:any): void;
     abstract drawOutline(ctx: CanvasRenderingContext2D): void;
     abstract setIsSelected(value: boolean) : void;
-   
+    
 }
