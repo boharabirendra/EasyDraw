@@ -62,6 +62,7 @@ export class Canvas {
   private endingShape: Shape | null = null;
   private isConnectionStart: boolean = false;
   private isConnectionEnd: boolean = false;
+  private resizeConnectionShape: Shape | null = null;
 
   constructor() {
     this.canvas = document.createElement("canvas");
@@ -122,7 +123,7 @@ export class Canvas {
         this.isConnectionStart = true;
       }
     }
-   
+
     if (this.currentShape === SHAPES.CURSOR) {
       for (let i = this.shapes.length - 1; i >= 0; i--) {
         if (this.shapes[i].isMouseWithinShape(currentMousePosition)) {
@@ -181,7 +182,7 @@ export class Canvas {
       const dy = position.posY - this.dragStartPosition.posY;
       this.selectedShape.move(dx, dy);
       /* Store previous mouse position */
-      this.dragStartPosition = position; 
+      this.dragStartPosition = position;
       this.displayAllShapes();
     } else if (this.isErasing) {
       if (this.currentEraser) {
@@ -217,28 +218,23 @@ export class Canvas {
     } else if (this.isResizing) {
       const dx = position.posX - this.startResizingPosition.posX;
       const dy = position.posY - this.startResizingPosition.posY;
+      this.displayAllShapes();
+      this.shapeConnector(event);
       switch (this.selectedShape?.shapeType) {
         case SHAPES.RECTANGLE:
           this.selectedShape?.reSize(this.resizeEdge, dx, dy);
-          this.startResizingPosition = position;
-          this.displayAllShapes();
           break;
         case SHAPES.CIRCLE:
           this.selectedShape?.reSize(position);
-          this.startResizingPosition = position;
-          this.displayAllShapes();
           break;
         case SHAPES.LINE:
           this.selectedShape?.reSize(this.resizeEdge, position);
-          this.startResizingPosition = position;
-          this.displayAllShapes();
           break;
         case SHAPES.ARROW:
           this.selectedShape?.reSize(this.resizeEdge, position);
-          this.startResizingPosition = position;
-          this.displayAllShapes();
           break;
       }
+      this.startResizingPosition = position;
     }
     this.activateRedoUndoBtn(this.shapes, this.redoStack);
   }
@@ -293,6 +289,34 @@ export class Canvas {
           break;
       }
     } else if (this.isResizing) {
+      /**Ending connection shape */
+      if (this.selectedShape?.shapeType === SHAPES.ARROW) {
+        this.shapeConnector(event);
+        if (this.resizeEdge === "start") {
+          if (this.selectedShape instanceof ArrowLine) {
+            if (this.resizeConnectionShape instanceof Rectangle) {
+              this.selectedShape.setPosition(
+                this.resizeConnectionShape.getRectanglePosition()
+              );
+            } else if (this.resizeConnectionShape instanceof Circle) {
+              this.selectedShape.setPosition(
+                this.resizeConnectionShape.getCenter()
+              );
+            }
+          }
+        }
+
+        if (this.resizeEdge === "end") {
+          if (this.selectedShape instanceof ArrowLine) {
+            if (this.resizeConnectionShape instanceof Rectangle) {
+              this.selectedShape.end =
+                this.resizeConnectionShape.getRectanglePosition();
+            } else if (this.resizeConnectionShape instanceof Circle) {
+              this.selectedShape.end = this.resizeConnectionShape.getCenter();
+            }
+          }
+        }
+      }
       this.isResizing = false;
       this.resizeEdge = null;
     }
@@ -330,6 +354,7 @@ export class Canvas {
     for (let i = this.shapes.length - 1; i >= 0; i--) {
       if (this.shapes[i].isMouseWithinShape(currentMousePosition)) {
         this.selectedShape = this.shapes[i];
+        this.resizeConnectionShape = this.shapes[i];
         this.selectedShapeIndex = i;
         break;
       }
@@ -372,13 +397,17 @@ export class Canvas {
   /**Connector arrow line */
   private shapeConnector(event: MouseEvent) {
     const currentMousePosition = this.getMousePosition(event);
-    if (this.currentShape === SHAPES.ARROW) {
+    if (
+      this.currentShape === SHAPES.ARROW ||
+      this.selectedShape?.shapeType === SHAPES.ARROW
+    ) {
       const tempSelectedShape = this.shapes.find((shape) => {
         if (shape) {
           return shape.isMouseWithinShape(currentMousePosition);
         }
       });
       if (tempSelectedShape) {
+        this.resizeConnectionShape = tempSelectedShape;
         tempSelectedShape.setIsSelected(true);
         tempSelectedShape.drawOutline(this.ctx);
       }
@@ -566,13 +595,13 @@ export class Canvas {
         let startCenter: IPoint = { posX: 0, posY: 0 };
         let endCenter: IPoint = { posX: 0, posY: 0 };
         if (this.startingShape instanceof Rectangle) {
-          startCenter = this.startingShape.getRectangleCenter();
+          startCenter = this.startingShape.getRectanglePosition();
         } else if (this.startingShape instanceof Circle) {
           startCenter = this.startingShape.getCenter();
         }
 
         if (this.endingShape instanceof Rectangle) {
-          endCenter = this.endingShape.getRectangleCenter();
+          endCenter = this.endingShape.getRectanglePosition();
         } else if (this.endingShape instanceof Circle) {
           endCenter = this.endingShape.getCenter();
         }
@@ -599,6 +628,8 @@ export class Canvas {
         this.shapes.push(newArrowLine);
         newArrowLine.draw(this.ctx);
       }
+      this.isConnectionStart = false;
+      this.isConnectionEnd = false;
     }
   }
 
@@ -650,7 +681,7 @@ export class Canvas {
     resizeInput();
     input.addEventListener("blur", onInputBlur);
     function resizeInput() {
-      input.style.width = `${(input.value.length + 1) * 12}px`;
+      input.style.width = `${(input.value.length + 1) * 13}px`;
     }
   }
 

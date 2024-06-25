@@ -1,4 +1,5 @@
 import {
+  ARROW_HEAD_LENGTH,
   EDGE_DETECTION_WIDTH,
   SELECTED_SHAPE_INDICATOR_CIRCLE_RADIUS,
 } from "../Constants/Constants";
@@ -6,7 +7,7 @@ import { IPoint, SHAPES, selectionIndicateCircle } from "../Utils/Common";
 import { Shape } from "./Shape";
 
 export class ArrowLine extends Shape {
-  private end: IPoint;
+  end: IPoint;
   isSelected: boolean = false;
   fillColor: string;
   strokeColor: string;
@@ -28,8 +29,13 @@ export class ArrowLine extends Shape {
     this.strokeStyle = strokeStyle;
   }
 
+  setPosition(newPosition:IPoint):void{
+    this.position.posX = newPosition.posX;
+    this.position.posY = newPosition.posY;
+  }
+
   draw(ctx: CanvasRenderingContext2D) {
-    const headLength = 15;
+    const headLength = ARROW_HEAD_LENGTH;
     const dx = this.end.posX - this.position.posX;
     const dy = this.end.posY - this.position.posY;
     const angle = Math.atan2(dy, dx);

@@ -14,3 +14,4 @@ export const DASH_WIDTH = 10;
 export const DASH_GAP  = 15;
 export const DOT_WIDTH = 2;
 export const DOT_GAP = 6;
+export const ARROW_HEAD_LENGTH = 15;

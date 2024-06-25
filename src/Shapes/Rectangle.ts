@@ -61,7 +61,7 @@ export class Rectangle extends Shape {
     ctx.restore();
   }
 
-  getRectangleCenter(): IPoint{
+  getRectanglePosition(): IPoint{
     return this.position;
   }
 

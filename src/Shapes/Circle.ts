@@ -58,13 +58,7 @@ export class Circle extends Shape {
     }
   }
 
-  setPosition(scale: number){
-    this.position.posX = this.position.posX * scale;
-    this.position.posY = this.position.posY * scale;
-  }
-  setRadius(scale: number){
-    this.radius = this.radius * scale;
-  }
+
 
   getCenter():IPoint{
     return this.position;

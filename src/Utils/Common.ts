@@ -81,7 +81,7 @@ export function getRightBottomCircleCenter(
 export function selectionIndicateRectangle(
   ctx: CanvasRenderingContext2D,
   position: IPoint,
-  dimension: IDimension
+  dimension: IDimension,
 ) {
   ctx.save();
   ctx.beginPath();

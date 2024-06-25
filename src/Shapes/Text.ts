@@ -32,6 +32,15 @@ export class Text extends Shape {
 
   draw(ctx: CanvasRenderingContext2D) {
     ctx.font = "24px Virgil";
+    ctx.save();
+    ctx.fillStyle = "white";
+    ctx.fillRect(
+      this.boundingBox.x - 5,
+      this.boundingBox.y + 14,
+      this.boundingBox.width + 10,
+      this.boundingBox.height + 14
+    )
+    ctx.restore();
     ctx.fillStyle = this.fontColor;
     ctx.fillText(this.text, this.position.posX, this.position.posY + 18);
     if (this.isSelected) {
