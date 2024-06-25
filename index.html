@@ -12,51 +12,54 @@
     <link rel="stylesheet" href="/src/assets/Styles/Style.css" />
   </head>
   <body>
-    <div class="toolbar_container" id="toolbar_container">
-      <div class="toolbar_icon">
-        <button id="cursorBtn" data-shape="CURSOR">
-          <img src="./src/assets/Images/cursor.png" alt="cursor" />
-        </button>
-      </div>
-      <div class="toolbar_icon">
-        <button id="rectangleBtn" title="Rectangle" data-shape="RECTANGLE">
-          <img src="./src/assets/Images/rectangle.png" alt="rectangle" />
-        </button>
-      </div>
-      <div class="toolbar_icon">
-        <button id="circleBtn" title="Circle" data-shape="CIRCLE">
-          <img src="./src/assets/Images/oval.png" alt="circle" />
-        </button>
-      </div>
-      <div class="toolbar_icon">
-        <button id="lineBtn" title="Line" data-shape="LINE">
-          <img src="./src/assets/Images/line.png" alt="line" />
-        </button>
-      </div>
-      <div class="toolbar_icon">
-        <button id="arrowBtn" title="Arrow line" data-shape="ARROW">
-          <img src="./src/assets/Images/arrow.png" alt="arrow line" />
-        </button>
-      </div>
-      <div class="toolbar_icon">
-        <button id="drawBtn" title="Drawing" data-shape="DRAW">
-          <img src="./src/assets/Images/pencil.png" alt="pencil" />
-        </button>
-      </div>
-      <div class="toolbar_icon">
-        <button id="textBtn" title="Text" data-shape="TEXT">
-          <img src="./src/assets/Images/text.png" alt="text" />
-        </button>
-      </div>
-      <div class="toolbar_icon">
-        <button id="eraserBtn" title="Eraser" data-shape="ERASER">
-          <img src="./src/assets/Images/eraser.png" alt="eraser" />
-        </button>
-      </div>
-      <div class="toolbar_icon">
-        <button id="clearBtn" title="Clear canvas">
-          <img src="./src/assets/Images/broom.png" alt="clear" />
-        </button>
+
+    <div class="toolbar_container">
+      <div id="toolbar_container" class="toolbar_content">
+        <div class="toolbar_icon">
+          <button id="cursorBtn" data-shape="CURSOR">
+            <img src="./src/assets/Images/cursor.png" alt="cursor" />
+          </button>
+        </div>
+        <div class="toolbar_icon">
+          <button id="rectangleBtn" title="Rectangle" data-shape="RECTANGLE">
+            <img src="./src/assets/Images/rectangle.png" alt="rectangle" />
+          </button>
+        </div>
+        <div class="toolbar_icon">
+          <button id="circleBtn" title="Circle" data-shape="CIRCLE">
+            <img src="./src/assets/Images/oval.png" alt="circle" />
+          </button>
+        </div>
+        <div class="toolbar_icon">
+          <button id="lineBtn" title="Line" data-shape="LINE">
+            <img src="./src/assets/Images/line.png" alt="line" />
+          </button>
+        </div>
+        <div class="toolbar_icon">
+          <button id="arrowBtn" title="Arrow line" data-shape="ARROW">
+            <img src="./src/assets/Images/arrow.png" alt="arrow line" />
+          </button>
+        </div>
+        <div class="toolbar_icon">
+          <button id="drawBtn" title="Drawing" data-shape="DRAW">
+            <img src="./src/assets/Images/pencil.png" alt="pencil" />
+          </button>
+        </div>
+        <div class="toolbar_icon">
+          <button id="textBtn" title="Text" data-shape="TEXT">
+            <img src="./src/assets/Images/text.png" alt="text" />
+          </button>
+        </div>
+        <div class="toolbar_icon">
+          <button id="eraserBtn" title="Eraser" data-shape="ERASER">
+            <img src="./src/assets/Images/eraser.png" alt="eraser" />
+          </button>
+        </div>
+        <div class="toolbar_icon">
+          <button id="clearBtn" title="Clear canvas">
+            <img src="./src/assets/Images/broom.png" alt="clear" />
+          </button>
+        </div>
       </div>
     </div>
     <div class="left_bottom_container">
@@ -213,7 +216,9 @@
         </div>
       </div>
     </div>
-    <div id="app"></div>
+    <div id="app">
+      <canvas id="canvas"></canvas>
+    </div>
     <img id="exportedImage" style="visibility: hidden;" alt="Exported PNG">
     <script type="module" src="/src/main.ts"></script>
   </body>

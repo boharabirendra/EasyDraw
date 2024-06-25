@@ -21,21 +21,28 @@ body {
 }
 
 .toolbar_container {
-  display: flex;
-  position: absolute;
-  gap: 5px;
-  top: 5%;
+  width: 100%;
+  max-width: 450px;
   left: 50%;
-  transform: translate(-50%, -50%);
+  top: 2%;
+  transform: translateX(-50%);
   padding: 6px 10px;
   box-shadow: 0px 0px 0.9310142994px 0px rgba(0, 0, 0, 0.17), 0px 0px 3.1270833015px 0px rgba(0, 0, 0, 0.08), 0px 7px 14px 0px rgba(0, 0, 0, 0.05);
   border-radius: 10px;
   background-color: white;
+  position: absolute;
 }
-.toolbar_container button {
+
+.toolbar_content {
+  display: flex;
+  gap: 5px;
+  justify-content: space-between;
+  align-items: center;
+}
+.toolbar_content button {
   transition: background-color 0.3s ease;
 }
-.toolbar_container .toolbar_icon button {
+.toolbar_content .toolbar_icon button {
   cursor: pointer;
   background-color: transparent;
   border: none;
@@ -43,7 +50,7 @@ body {
   border-radius: 10px;
   box-shadow: 0px 0px 0.5 gray;
 }
-.toolbar_container .toolbar_icon button:hover {
+.toolbar_content .toolbar_icon button:hover {
   background-color: #e0dfff;
 }
 
@@ -160,6 +167,18 @@ body {
 .panelColumn .extra__bold div {
   height: 4px;
   background-color: rgb(37, 36, 36);
+}
+
+@media (max-width: 768px) {
+  .toolbar_container {
+    gap: 2px;
+  }
+  .toolbar_container button {
+    padding: 4px 6px;
+  }
+  .toolbar_container .toolbar_icon img {
+    width: 14px;
+  }
 }
 
 /*# sourceMappingURL=Style.css.map */

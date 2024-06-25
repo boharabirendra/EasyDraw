@@ -65,13 +65,11 @@ export class Canvas {
   private resizeConnectionShape: Shape | null = null;
 
   constructor() {
-    this.canvas = document.createElement("canvas");
+    this.canvas = document.querySelector("#canvas") as HTMLCanvasElement;
     this.canvas.width = DIMENSION.CANVAS_WIDTH;
     this.canvas.height = DIMENSION.CANVAS_HEIGHT;
     this.ctx = this.canvas.getContext("2d") as CanvasRenderingContext2D;
-
     this.ctx.font = '24px "Virgil", sans-serif';
-    document.getElementById("app")?.appendChild(this.canvas);
     this.zoomPercentageEl = document.querySelector(
       "#zoom__percentage"
     ) as HTMLButtonElement;
