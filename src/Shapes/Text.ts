@@ -14,8 +14,6 @@ import { Shape } from "./Shape";
 
 export class Text extends Shape {
   text: string;
-  fontColor: string;
-  isSelected: boolean = false;
   boundingBox: { x: number; y: number; width: number; height: number };
 
   constructor(
@@ -24,10 +22,16 @@ export class Text extends Shape {
     boundingBox: { x: number; y: number; width: number; height: number },
     fontColor: string = "black"
   ) {
-    super(position, SHAPES.TEXT);
+    super(
+      position, 
+      SHAPES.TEXT,
+      "",
+      fontColor,
+      1,
+      []
+    );
     this.text = text;
     this.boundingBox = boundingBox;
-    this.fontColor = fontColor;
   }
 
   draw(ctx: CanvasRenderingContext2D) {
@@ -41,7 +45,7 @@ export class Text extends Shape {
       this.boundingBox.height + 14
     )
     ctx.restore();
-    ctx.fillStyle = this.fontColor;
+    ctx.fillStyle = this.strokeColor;
     ctx.fillText(this.text, this.position.posX, this.position.posY + 18);
     if (this.isSelected) {
       this.drawOutline(ctx);

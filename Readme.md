@@ -8,7 +8,7 @@ Welcome to Easy Draw, a web application built using Vanilla TypeScript, HTML5 Ca
 - Draw various shapes such as rectangles, circles, and lines
 - Move, resize, and change properties of shapes
 - Interactive UI for shape manipulation
-- Save drawing to localstorage and retrieve 
+- Save drawing to local storage and retrieve 
 - Export selected image
 
 ## Installation

@@ -17,12 +17,6 @@ import { Shape } from "./Shape";
 
 export class Rectangle extends Shape {
   dimension: IDimension;
-  isSelected: boolean = false;
-  fillColor: string;
-  strokeColor: string;
-  strokeWidth: number;
-  strokeStyle: number[];
- 
 
   constructor(
     position: IPoint,
@@ -32,12 +26,15 @@ export class Rectangle extends Shape {
     strokeWidth = 2,
     strokeStyle: number[] = []
   ) {
-    super(position, SHAPES.RECTANGLE);
+    super(
+      position,
+      SHAPES.RECTANGLE,
+      fillColor,
+      strokeColor,
+      strokeWidth,
+      strokeStyle
+    );
     this.dimension = dimension;
-    this.fillColor = fillColor;
-    this.strokeColor = strokeColor;
-    this.strokeWidth = strokeWidth;
-    this.strokeStyle = strokeStyle;
   }
 
   draw(ctx: CanvasRenderingContext2D): void {
@@ -61,7 +58,7 @@ export class Rectangle extends Shape {
     ctx.restore();
   }
 
-  getRectanglePosition(): IPoint{
+  getRectanglePosition(): IPoint {
     return this.position;
   }
 
@@ -100,10 +97,6 @@ export class Rectangle extends Shape {
       rightBottomCircle,
       SELECTED_SHAPE_INDICATOR_CIRCLE_RADIUS
     );
-  }
-
-  setIsSelected(value: boolean): void {
-    this.isSelected = value;
   }
 
   isMouseWithinShape(point: IPoint): boolean {

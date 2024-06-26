@@ -6,12 +6,7 @@ import { IPoint, SHAPES, selectionIndicateCircle } from "../Utils/Common";
 import { Shape } from "./Shape";
 
 export class Line extends Shape {
-  private end: IPoint;
-  isSelected: boolean = false;
-  fillColor: string;
-  strokeColor: string;
-  strokeWidth: number;
-  strokeStyle: number[];
+  private _end: IPoint;
 
   constructor(
     start: IPoint,
@@ -21,12 +16,15 @@ export class Line extends Shape {
     strokeWidth = 2,
     strokeStyle: number[] = []
   ) {
-    super(start, SHAPES.LINE);
-    this.end = end;
-    this.fillColor = fillColor;
-    this.strokeColor = strokeColor;
-    this.strokeWidth = strokeWidth;
-    this.strokeStyle = strokeStyle;
+    super(start, SHAPES.LINE, fillColor, strokeColor, strokeWidth, strokeStyle);
+    this._end = end;
+  }
+
+  public get end(): IPoint {
+    return this._end;
+  }
+  public set end(value: IPoint) {
+    this._end = value;
   }
 
   draw(ctx: CanvasRenderingContext2D) {
@@ -42,10 +40,6 @@ export class Line extends Shape {
     if (this.isSelected) {
       this.drawOutline(ctx);
     }
-  }
-
-  setIsSelected(value: boolean): void {
-    this.isSelected = value;
   }
 
   drawOutline(ctx: CanvasRenderingContext2D): void {

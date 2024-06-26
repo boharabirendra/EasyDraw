@@ -5,7 +5,14 @@ export class Eraser extends Shape {
   path: IPoint[];
 
   constructor(start: IPoint) {
-    super(start, SHAPES.ERASER);
+    super(
+      start, 
+      SHAPES.ERASER,
+      "",
+      "",
+      0,
+      []
+    );
     this.path = [start];
   }
 

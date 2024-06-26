@@ -24,6 +24,9 @@ import {
   body,
   highlightCurrentSelectedTool,
 } from "../Utils/HighlightSelectedTool";
+import { handleShortcut, toggleSidePanel } from "./UIHandler";
+import { getDataFromLocalStorage } from "../Storage/Storage";
+import { exportSelectedShape } from "./ExportHandler";
 export class Canvas {
   private canvas: HTMLCanvasElement;
   private ctx: CanvasRenderingContext2D;
@@ -49,10 +52,6 @@ export class Canvas {
   private toBeChangeShape: Shape | undefined = undefined;
   private drawingColor: string = "black";
   private drawingWidth: number = THIN_LINE_WIDTH;
-  private scale: number = 1;
-  // private scaleFactor: number = 1.1;
-  // private zoomPercentage: number = 100;
-  // private zoomPercentageEl: HTMLButtonElement | null = null;
   private previouslySelectedShape: Shape | null = null;
   private isShowingSidePanel: boolean = false;
   private selectedStrokeColor: string = "";
@@ -71,9 +70,6 @@ export class Canvas {
     this.canvas.height = DIMENSION.CANVAS_HEIGHT;
     this.ctx = this.canvas.getContext("2d") as CanvasRenderingContext2D;
     this.ctx.font = '24px "Virgil", sans-serif';
-    // this.zoomPercentageEl = document.querySelector(
-    //   "#zoom__percentage"
-    // ) as HTMLButtonElement;
     this.init();
   }
 
@@ -100,13 +96,16 @@ export class Canvas {
     this.undoRedoManager();
     // this.zoomManager();
     this.handleActions();
-    this.getDataFromLocalStorage();
-    this.handleShortcut();
+    this.fetchSavedShapes();
+    handleShortcut();
   }
 
   onTouchStart(event: TouchEvent) {
     event.preventDefault();
     this.onMouseDown(event);
+    if (this.currentShape !== SHAPES.DRAW) {
+      this.isShowingSidePanel = false;
+    }
   }
 
   onTouchMove(event: TouchEvent) {
@@ -155,7 +154,7 @@ export class Canvas {
       this.toBeChangeShape = this.selectedShape;
       if (this.selectedShape) {
         this.previouslySelectedShape = this.selectedShape;
-        this.selectedShape.setIsSelected(true);
+        this.selectedShape.isSelected = true;
         this.selectedShape.drawOutline(this.ctx);
         this.isShowingSidePanel = true;
         this.selectedShapeForAltering.push({
@@ -193,9 +192,8 @@ export class Canvas {
     const position = this.getMousePosition(event);
     /* Changing mouse shape */
     this.changeMouseShape(position, event);
-    this.shapeConnector(event);
+    this.shapeConnectorIndicator(event);
     this.eraseShape(event);
-    console.log(position);
     if (this.isDragging && this.selectedShape) {
       const dx = position.posX - this.dragStartPosition.posX;
       const dy = position.posY - this.dragStartPosition.posY;
@@ -210,7 +208,7 @@ export class Canvas {
       }
     } else if (this.isDrawing) {
       this.displayAllShapes();
-      this.shapeConnector(event);
+      this.shapeConnectorIndicator(event);
       switch (this.currentShape) {
         case SHAPES.RECTANGLE:
           this.drawRectangle(position);
@@ -239,7 +237,7 @@ export class Canvas {
       const dx = position.posX - this.startResizingPosition.posX;
       const dy = position.posY - this.startResizingPosition.posY;
       this.displayAllShapes();
-      this.shapeConnector(event);
+      this.shapeConnectorIndicator(event);
       switch (this.selectedShape?.shapeType) {
         case SHAPES.RECTANGLE:
           this.selectedShape?.reSize(this.resizeEdge, dx, dy);
@@ -310,31 +308,18 @@ export class Canvas {
       }
     } else if (this.isResizing) {
       /**Ending connection shape */
-      if (this.selectedShape?.shapeType === SHAPES.ARROW) {
-        this.shapeConnector(event);
-
+      if (
+        this.selectedShape?.shapeType === SHAPES.ARROW &&
+        this.resizeConnectionShape
+      ) {
+        this.shapeConnectorIndicator(event);
         if (this.resizeEdge === "start") {
-          if (this.selectedShape instanceof ArrowLine) {
-            if (this.resizeConnectionShape instanceof Rectangle) {
-              this.selectedShape.setPosition(
-                this.resizeConnectionShape.getRectanglePosition()
-              );
-            } else if (this.resizeConnectionShape instanceof Circle) {
-              this.selectedShape.setPosition(
-                this.resizeConnectionShape.getCenter()
-              );
-            }
-          }
+          this.selectedShape.position = this.resizeConnectionShape.position;
         }
 
         if (this.resizeEdge === "end") {
           if (this.selectedShape instanceof ArrowLine) {
-            if (this.resizeConnectionShape instanceof Rectangle) {
-              this.selectedShape.end =
-                this.resizeConnectionShape.getRectanglePosition();
-            } else if (this.resizeConnectionShape instanceof Circle) {
-              this.selectedShape.end = this.resizeConnectionShape.getCenter();
-            }
+            this.selectedShape.end = this.resizeConnectionShape.position;
           }
         }
       }
@@ -417,7 +402,7 @@ export class Canvas {
   }
 
   /**Connector arrow line */
-  private shapeConnector(event: any) {
+  private shapeConnectorIndicator(event: any) {
     const currentMousePosition = this.getMousePosition(event);
     if (
       this.currentShape === SHAPES.ARROW ||
@@ -430,10 +415,10 @@ export class Canvas {
       });
       if (tempSelectedShape) {
         this.resizeConnectionShape = tempSelectedShape;
-        tempSelectedShape.setIsSelected(true);
+        tempSelectedShape.isSelected = true;
         tempSelectedShape.drawOutline(this.ctx);
       }
-      tempSelectedShape?.setIsSelected(false);
+      // tempSelectedShape?.isSelected = false;
       if (!tempSelectedShape) {
         this.displayAllShapes();
       }
@@ -451,7 +436,7 @@ export class Canvas {
         }
       });
       if (tempSelectedShape) {
-        tempSelectedShape.setIsSelected(true);
+        tempSelectedShape.isSelected = true;
         tempSelectedShape.drawOutline(this.ctx);
         if (shapeIndex !== null) {
           this.selectedShapeForAltering.push({
@@ -630,30 +615,20 @@ export class Canvas {
       );
       arrowLine.draw(this.ctx);
     } else {
-      if (this.isConnectionStart && this.isConnectionEnd) {
-        let startCenter: IPoint = { posX: 0, posY: 0 };
-        let endCenter: IPoint = { posX: 0, posY: 0 };
-        if (this.startingShape instanceof Rectangle) {
-          startCenter = this.startingShape.getRectanglePosition();
-        } else if (this.startingShape instanceof Circle) {
-          startCenter = this.startingShape.getCenter();
-        }
-
-        if (this.endingShape instanceof Rectangle) {
-          endCenter = this.endingShape.getRectanglePosition();
-        } else if (this.endingShape instanceof Circle) {
-          endCenter = this.endingShape.getCenter();
-        }
-
+      if (
+        this.isConnectionStart &&
+        this.isConnectionEnd &&
+        this.startingShape &&
+        this.endingShape
+      ) {
         const newArrowLine = ArrowLine.generateArrowLine(
-          startCenter,
-          endCenter,
+          this.startingShape.position,
+          this.endingShape.position,
           this.selectedBackgroundColor,
           this.selectedStrokeColor,
           this.selectedWidthSize,
           this.selectedWidthStyle
         );
-
         this.shapes.push(newArrowLine);
       } else {
         const newArrowLine = ArrowLine.generateArrowLine(
@@ -681,7 +656,6 @@ export class Canvas {
     input.style.resize = "none";
     input.style.fontFamily = "Virgil, sans-serif";
     input.style.fontSize = "24px";
-    input.style.textWrap = "wrap";
     input.style.color = this.selectedStrokeColor;
     input.style.left = `${position.posX}px`;
     input.style.top = `${position.posY}px`;
@@ -747,6 +721,7 @@ export class Canvas {
       this.sizeOfShapesAtUndoStart = this.shapes.length;
     }
   }
+
   private redo() {
     if (this.redoStack.length > 0) {
       const lastMomento = this.redoStack.pop();
@@ -759,34 +734,17 @@ export class Canvas {
 
   /*Keyboard actions*/
   private keyboardActions(event: KeyboardEvent) {
-    /* Undo actions */
     if (event.ctrlKey && event.key === "z") {
       event.preventDefault();
       this.undo();
     }
-    /* Redo action */
     if (event.ctrlKey && event.key === "y") {
       event.preventDefault();
       this.redo();
     }
-    /* Shape deletion */
     if (event.key === "Delete") {
       this.deleteSelectedShapes();
     }
-    /* zoom in and zoom out */
-    // if (event.ctrlKey) {
-    //   switch (event.key) {
-    //     case "+":
-    //     case "=":
-    //       this.zoomIn();
-    //       event.preventDefault();
-    //       break;
-    //     case "-":
-    //       this.zoomOut();
-    //       event.preventDefault();
-    //       break;
-    //   }
-    // }
   }
 
   private deleteSelectedShapes() {
@@ -823,9 +781,6 @@ export class Canvas {
   private displayAllShapes() {
     this.clearCanvas();
     this.ctx.save();
-    this.ctx.translate(this.ctx.canvas.width / 2, this.ctx.canvas.height / 2);
-    this.ctx.scale(this.scale, this.scale);
-    this.ctx.translate(-this.ctx.canvas.width / 2, -this.ctx.canvas.height / 2);
     this.shapes.forEach((shape) => {
       if (shape) {
         shape.draw(this.ctx);
@@ -836,69 +791,14 @@ export class Canvas {
 
   /*Change shapes colors*/
   private updateSelectedShapeFillColor(color: string) {
-    if (
-      this.toBeChangeShape &&
-      this.toBeChangeShape.shapeType === SHAPES.CIRCLE &&
-      this.toBeChangeShape instanceof Circle
-    ) {
-      this.toBeChangeShape.fillColor = color;
-      this.displayAllShapes();
-    }
-    if (
-      this.toBeChangeShape &&
-      this.toBeChangeShape.shapeType === SHAPES.RECTANGLE &&
-      this.toBeChangeShape instanceof Rectangle
-    ) {
+    if (this.toBeChangeShape) {
       this.toBeChangeShape.fillColor = color;
       this.displayAllShapes();
     }
   }
+
   private updateSelectedShapeStrokeColor(color: string) {
-    if (
-      this.toBeChangeShape &&
-      this.toBeChangeShape.shapeType === SHAPES.CIRCLE &&
-      this.toBeChangeShape instanceof Circle
-    ) {
-      this.toBeChangeShape.strokeColor = color;
-      this.displayAllShapes();
-    }
-    if (
-      this.toBeChangeShape &&
-      this.toBeChangeShape.shapeType === SHAPES.RECTANGLE &&
-      this.toBeChangeShape instanceof Rectangle
-    ) {
-      this.toBeChangeShape.strokeColor = color;
-      this.displayAllShapes();
-    }
-    if (
-      this.toBeChangeShape &&
-      this.toBeChangeShape.shapeType === SHAPES.LINE &&
-      this.toBeChangeShape instanceof Line
-    ) {
-      this.toBeChangeShape.strokeColor = color;
-      this.displayAllShapes();
-    }
-    if (
-      this.toBeChangeShape &&
-      this.toBeChangeShape.shapeType === SHAPES.ARROW &&
-      this.toBeChangeShape instanceof ArrowLine
-    ) {
-      this.toBeChangeShape.strokeColor = color;
-      this.displayAllShapes();
-    }
-    if (
-      this.toBeChangeShape &&
-      this.toBeChangeShape.shapeType === SHAPES.TEXT &&
-      this.toBeChangeShape instanceof Text
-    ) {
-      this.toBeChangeShape.fontColor = color;
-      this.displayAllShapes();
-    }
-    if (
-      this.toBeChangeShape &&
-      this.toBeChangeShape.shapeType === SHAPES.DRAW &&
-      this.toBeChangeShape instanceof Draw
-    ) {
+    if (this.toBeChangeShape) {
       this.toBeChangeShape.strokeColor = color;
       this.displayAllShapes();
     }
@@ -965,32 +865,7 @@ export class Canvas {
   }
 
   private updateSelectedShapeWidth(widthType: string) {
-    if (
-      this.toBeChangeShape &&
-      this.toBeChangeShape.shapeType === SHAPES.RECTANGLE &&
-      this.toBeChangeShape instanceof Rectangle
-    ) {
-      this.toBeChangeShape.strokeWidth = this.widthSelector(widthType);
-      this.displayAllShapes();
-    } else if (
-      this.toBeChangeShape &&
-      this.toBeChangeShape.shapeType === SHAPES.CIRCLE &&
-      this.toBeChangeShape instanceof Circle
-    ) {
-      this.toBeChangeShape.strokeWidth = this.widthSelector(widthType);
-      this.displayAllShapes();
-    } else if (
-      this.toBeChangeShape &&
-      this.toBeChangeShape.shapeType === SHAPES.LINE &&
-      this.toBeChangeShape instanceof Line
-    ) {
-      this.toBeChangeShape.strokeWidth = this.widthSelector(widthType);
-      this.displayAllShapes();
-    } else if (
-      this.toBeChangeShape &&
-      this.toBeChangeShape.shapeType === SHAPES.ARROW &&
-      this.toBeChangeShape instanceof ArrowLine
-    ) {
+    if (this.toBeChangeShape) {
       this.toBeChangeShape.strokeWidth = this.widthSelector(widthType);
       this.displayAllShapes();
     }
@@ -1049,32 +924,7 @@ export class Canvas {
   }
 
   private updateSelectedShapeWidthStyle(widthStyle: string) {
-    if (
-      this.toBeChangeShape &&
-      this.toBeChangeShape.shapeType === SHAPES.RECTANGLE &&
-      this.toBeChangeShape instanceof Rectangle
-    ) {
-      this.toBeChangeShape.strokeStyle = this.widthStyleSelector(widthStyle);
-      this.displayAllShapes();
-    } else if (
-      this.toBeChangeShape &&
-      this.toBeChangeShape.shapeType === SHAPES.CIRCLE &&
-      this.toBeChangeShape instanceof Circle
-    ) {
-      this.toBeChangeShape.strokeStyle = this.widthStyleSelector(widthStyle);
-      this.displayAllShapes();
-    } else if (
-      this.toBeChangeShape &&
-      this.toBeChangeShape.shapeType === SHAPES.LINE &&
-      this.toBeChangeShape instanceof Line
-    ) {
-      this.toBeChangeShape.strokeStyle = this.widthStyleSelector(widthStyle);
-      this.displayAllShapes();
-    } else if (
-      this.toBeChangeShape &&
-      this.toBeChangeShape.shapeType === SHAPES.ARROW &&
-      this.toBeChangeShape instanceof ArrowLine
-    ) {
+    if (this.toBeChangeShape) {
       this.toBeChangeShape.strokeStyle = this.widthStyleSelector(widthStyle);
       this.displayAllShapes();
     }
@@ -1089,26 +939,6 @@ export class Canvas {
       return [DOT_WIDTH, DOT_GAP];
     }
   }
-  /* Zoom section */
-  // private zoomIn() {
-  //   this.scale *= this.scaleFactor;
-  //   this.zoomPercentage += 10;
-  //   document.querySelector(
-  //     "#zoom__percentage"
-  //   )!.innerHTML = `${this.zoomPercentage}%`;
-  //   this.displayAllShapes();
-  // }
-
-  // private zoomOut() {
-  //   if (this.zoomPercentage > 10) {
-  //     this.scale /= this.scaleFactor;
-  //     this.zoomPercentage -= 10;
-  //     document.querySelector(
-  //       "#zoom__percentage"
-  //     )!.innerHTML = `${this.zoomPercentage}%`;
-  //     this.displayAllShapes();
-  //   }
-  // }
 
   /**INDEXING SHAPES */
   private sendToBack() {
@@ -1211,73 +1041,20 @@ export class Canvas {
     previouslySelectedShape: Shape | null
   ) {
     if (previouslySelectedShape) {
-      previouslySelectedShape.setIsSelected(false);
+      previouslySelectedShape.isSelected = false;
     }
   }
 
   private sidePanelHandler() {
-    const sidePane = document.querySelector(".panelColumn") as HTMLDivElement;
-    if (this.isShowingSidePanel) {
-      sidePane.style.display = "block";
-    } else {
-      sidePane.style.display = "none";
-    }
+    toggleSidePanel(this.isShowingSidePanel)
   }
 
   /**Export selected shape */
-  private exportSelectedShape() {
-    const exportedImage = document.getElementById(
-      "exportedImage"
-    ) as HTMLImageElement;
-    const tempCanvas = document.createElement("canvas") as HTMLCanvasElement;
-    const tempContext = tempCanvas.getContext("2d")!;
-    tempCanvas.width = this.canvas.width;
-    tempCanvas.height = this.canvas.height;
-    if (this.selectedShapeForAltering.length > 0) {
-      const selectedShape = this.selectedShapeForAltering[0].shape;
-      selectedShape.setIsSelected(false);
-      selectedShape.draw(tempContext);
-      const imageData = tempCanvas.toDataURL("image/png");
-      exportedImage.src = imageData;
-      const downloadLink = document.createElement("a");
-      downloadLink.href = imageData;
-      downloadLink.download = "selected_shapes.png";
-      document.body.appendChild(downloadLink);
-      downloadLink.click();
-      document.body.removeChild(downloadLink);
+  private exportHandler() {
+    if (this.toBeChangeShape) {
+      exportSelectedShape(this.ctx, this.toBeChangeShape);
     }
   }
-
-  // /**Zoom section */
-  // private zoomManager() {
-  //   document
-  //     .querySelector("#zoom")
-  //     ?.querySelectorAll("button")
-  //     .forEach((button) => {
-  //       button.addEventListener("click", () => {
-  //         button.style.transition = "0.3s";
-  //         if (button.id === "zoom__out") {
-  //           button.style.border = "1px solid blue";
-  //           button.style.borderTopLeftRadius = "5px";
-  //           button.style.borderBottomLeftRadius = "5px";
-  //           this.zoomOut();
-  //         } else if (button.id === "zoom__in") {
-  //           button.style.border = "1px solid blue";
-  //           button.style.borderTopRightRadius = "5px";
-  //           button.style.borderBottomRightRadius = "5px";
-  //           this.zoomIn();
-  //         } else if (button.id === "zoom__percentage") {
-  //           this.scale = 1;
-  //           this.zoomPercentage = 100;
-  //           this.zoomPercentageEl!.innerHTML = `${this.zoomPercentage}%`;
-  //           this.displayAllShapes();
-  //         }
-  //         setTimeout(() => {
-  //           button.style.border = "none";
-  //         }, 700);
-  //       });
-  //     });
-  // }
 
   /*Undo & Redo */
   private undoRedoManager() {
@@ -1320,7 +1097,7 @@ export class Canvas {
           if (id === "deleteBtn") {
             this.deleteSelectedShapes();
           } else if (id === "exportBtn") {
-            this.exportSelectedShape();
+            this.exportHandler();
           } else if (id === "saveBtn") {
             this.saveToLocalStorage();
           }
@@ -1333,93 +1110,11 @@ export class Canvas {
     localStorage.setItem("savedData", JSON.stringify(this.shapes));
   }
 
-  private getDataFromLocalStorage() {
-    const savedData = localStorage.getItem("savedData");
-    if (savedData) {
-      const shapes: any[] = JSON.parse(savedData);
-      shapes.forEach((shape) => {
-        if (shape.shapeType === SHAPES.RECTANGLE) {
-          this.shapes.push(
-            new Rectangle(
-              shape.position,
-              shape.dimension,
-              shape.fillColor,
-              shape.strokeColor,
-              shape.strokeWidth,
-              shape.strokeStyle
-            )
-          );
-        } else if (shape.shapeType === SHAPES.CIRCLE) {
-          this.shapes.push(
-            new Circle(
-              shape.position,
-              shape.radius,
-              shape.fillColor,
-              shape.strokeColor,
-              shape.strokeWidth,
-              shape.strokeStyle
-            )
-          );
-        } else if (shape.shapeType === SHAPES.LINE) {
-          this.shapes.push(
-            new Line(
-              shape.position,
-              shape.end,
-              shape.fillColor,
-              shape.strokeColor,
-              shape.strokeWidth,
-              shape.strokeStyle
-            )
-          );
-        } else if (shape.shapeType === SHAPES.ARROW) {
-          this.shapes.push(
-            new ArrowLine(
-              shape.position,
-              shape.end,
-              shape.fillColor,
-              shape.strokeColor,
-              shape.strokeWidth,
-              shape.strokeStyle
-            )
-          );
-        } else if (shape.shapeType === SHAPES.TEXT) {
-          this.shapes.push(
-            new Text(
-              shape.position,
-              shape.text,
-              shape.boundingBox,
-              shape.strokeColor
-            )
-          );
-        } else if (shape.shapeType === SHAPES.DRAW) {
-          const newDraw = new Draw(
-            shape.position,
-            shape.strokeColor,
-            shape.strokeWidth
-          );
-          shape.path.forEach((path: IPoint) => newDraw.addPoint(path));
-          this.shapes.push(newDraw);
-        }
-      });
+  private fetchSavedShapes() {
+    const savedShapes: Shape[] | null = getDataFromLocalStorage();
+    if (savedShapes) {
+      this.shapes = savedShapes;
       this.displayAllShapes();
     }
-  }
-
-  /**Shortcut section */
-  private handleShortcut(){
-    const shortcutItemsEl = document.querySelector("#shortcut_items") as HTMLDivElement;
-    shortcutItemsEl.style.display = "none";
-    let flag = false;
-    const shortcutEl = document.querySelector("#shortcut") as HTMLButtonElement;
-    shortcutEl.addEventListener("click", ()=>{
-      if(flag){
-        shortcutItemsEl.style.display = "none";
-        flag = false;
-      }else{
-        shortcutItemsEl.style.display = "block";
-        flag = true;
-      }
-    })
-    
   }
 }

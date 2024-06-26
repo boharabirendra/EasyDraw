@@ -3,15 +3,9 @@ import { Shape } from "./Shape";
 
 export class Draw extends Shape {
   path: IPoint[];
-  strokeColor: string;
-  strokeWidth: number;
 
-  constructor(
-    start: IPoint,
-    strokeColor = "black",
-    strokeWidth = 16,
-  ) {
-    super(start, SHAPES.DRAW);
+  constructor(start: IPoint, strokeColor = "black", strokeWidth = 16) {
+    super(start, SHAPES.DRAW, "", strokeColor, strokeWidth, []);
     this.path = [start];
     this.strokeColor = strokeColor;
     this.strokeWidth = strokeWidth;
@@ -21,9 +15,6 @@ export class Draw extends Shape {
     this.path.push(point);
   }
 
-  setStrokeColor(color: string) {
-    this.strokeColor = color;
-  }
 
   draw(ctx: CanvasRenderingContext2D): void {
     if (this.path.length < 2) return;
@@ -40,8 +31,8 @@ export class Draw extends Shape {
   }
 
   isMouseWithinShape(currentMousePosition: IPoint): boolean {
-    const tempCanvas = document.createElement('canvas');
-    const tempContext = tempCanvas.getContext('2d')!;
+    const tempCanvas = document.createElement("canvas");
+    const tempContext = tempCanvas.getContext("2d")!;
     tempCanvas.width = 1;
     tempCanvas.height = 1;
 
@@ -54,7 +45,10 @@ export class Draw extends Shape {
     tempContext.strokeStyle = this.strokeColor;
     tempContext.stroke();
 
-    return tempContext.isPointInStroke(currentMousePosition.posX, currentMousePosition.posY);
+    return tempContext.isPointInStroke(
+      currentMousePosition.posX,
+      currentMousePosition.posY
+    );
   }
   // @ts-ignore
   isMouseNearEdge(currentMousePosition: IPoint): string | boolean | null {

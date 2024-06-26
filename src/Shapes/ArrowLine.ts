@@ -7,32 +7,32 @@ import { IPoint, SHAPES, selectionIndicateCircle } from "../Utils/Common";
 import { Shape } from "./Shape";
 
 export class ArrowLine extends Shape {
-  end: IPoint;
-  isSelected: boolean = false;
-  fillColor: string;
-  strokeColor: string;
-  strokeWidth: number;
-  strokeStyle: number[];
+  private _end: IPoint;
+
   constructor(
     start: IPoint,
     end: IPoint,
     fillColor = "transparent",
     strokeColor = "black",
     strokeWidth = 2,
-    strokeStyle: number[] =[],
+    strokeStyle: number[] = []
   ) {
-    super(start, SHAPES.ARROW);
-    this.end = end;
-    this.fillColor = fillColor;
-    this.strokeColor = strokeColor;
-    this.strokeWidth = strokeWidth;
-    this.strokeStyle = strokeStyle;
+    super(
+      start,
+      SHAPES.ARROW,
+      fillColor,
+      strokeColor,
+      strokeWidth,
+      strokeStyle
+    );
+    this._end = end;
   }
 
-  setPosition(newPosition:IPoint):void{
-    console.log(this.position, newPosition  );
-    this.position.posX = newPosition.posX;
-    this.position.posY = newPosition.posY;
+  public get end(): IPoint {
+    return this._end;
+  }
+  public set end(value: IPoint) {
+    this._end = value;
   }
 
   draw(ctx: CanvasRenderingContext2D) {
@@ -61,10 +61,6 @@ export class ArrowLine extends Shape {
     if (this.isSelected) {
       this.drawOutline(ctx);
     }
-  }
-
-  setIsSelected(value: boolean): void {
-    this.isSelected = value;
   }
 
   drawOutline(ctx: CanvasRenderingContext2D): void {
