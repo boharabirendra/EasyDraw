@@ -92,7 +92,7 @@ export class Canvas {
     this.canvas.addEventListener("mousedown", this.onMouseDown.bind(this));
     this.canvas.addEventListener("mousemove", this.onMouseMove.bind(this));
     this.canvas.addEventListener("mouseup", this.onMouseUp.bind(this));
-    this.canvas.addEventListener("dblclick", this.doubleClick.bind(this));
+    this.canvas.addEventListener("dblclick", this.onDoubleClick.bind(this));
     document.addEventListener("click", () => {
       activateRedoUndoBtn(this.undoStack, this.redoStack);
     });
@@ -103,7 +103,7 @@ export class Canvas {
 
     document.addEventListener("click", this.sidePanelHandler.bind(this));
     document.addEventListener("keydown", this.keyboardActions.bind(this));
-    // this.zoomPercentageEl!.innerHTML = `${this.zoomPercentage}%`;
+
     /* Function call */
     highlightCurrentSelectedTool();
     this.toolBarManager();
@@ -112,7 +112,6 @@ export class Canvas {
     this.changeWidthStyleOfShape();
     this.layerManager();
     this.undoRedoManager();
-    // this.zoomManager();
     this.handleActions();
     this.fetchSavedShapes();
     handleShortcut();
@@ -125,20 +124,51 @@ export class Canvas {
       this.isShowingSidePanel = false;
     }
   }
-
   onTouchMove(event: TouchEvent) {
     event.preventDefault();
     this.onMouseMove(event);
   }
-
   onTouchEnd(event: TouchEvent) {
     event.preventDefault();
     this.onMouseUp(event);
   }
 
   /**Edit text */
-  doubleClick(event: any) {
+  onDoubleClick(event: any) {
     this.editText(event);
+  }
+
+  onMouseMove(event: any) {
+    const position = this.getMousePosition(event);
+    this.changeMouseShape(position, event);
+    this.shapeConnectorIndicator(event);
+    this.eraseShape(event);
+    if (this.isDragging && this.selectedShape) {
+      this.startDragging(position, this.selectedShape);
+    } else if (this.isErasing) {
+      if (this.currentEraser) {
+        this.currentEraser.addPoint(position);
+        this.currentEraser.draw(this.ctx);
+      }
+    } else if (this.isDrawing) {
+      this.displayAllShapes();
+      this.shapeConnectorIndicator(event);
+      this.startDrawing(position);
+    } else if (this.isResizing) {
+      this.startResizing(position);
+    }
+  }
+
+  onMouseUp(event: any) {
+    const position = this.getMousePosition(event);
+    if (this.isDragging) {
+      this.isDragging = false;
+      this.selectedShape = undefined;
+    } else if (this.isDrawing) {
+      this.endDrawing(position);
+    } else if (this.isResizing) {
+      this.endResizing();
+    }
   }
 
   onMouseDown(event: any) {
@@ -206,146 +236,129 @@ export class Canvas {
     }
   }
 
-  onMouseMove(event: any) {
-    const position = this.getMousePosition(event);
-    /* Changing mouse shape */
-    this.changeMouseShape(position, event);
+  private endResizing() {
+    /**Ending connection shape */
+    if (
+      this.selectedShape?.shapeType === SHAPES.ARROW &&
+      this.resizeConnectionShape
+    ) {
+      this.shapeConnectorIndicator(event);
+      if (this.resizeEdge === "start") {
+        this.selectedShape.position = this.resizeConnectionShape.position;
+      }
+
+      if (this.resizeEdge === "end") {
+        if (this.selectedShape instanceof ArrowLine) {
+          this.selectedShape.end = this.resizeConnectionShape.position;
+        }
+      }
+    }
+
+    this.isResizing = false;
+    this.resizeEdge = null;
+  }
+
+  private endDrawing(position: IPoint) {
+    this.isDrawing = false;
+    /**Ending connection shape */
+    if (this.currentShape === SHAPES.ARROW) {
+      this.locateSelectedShape(position);
+      if (this.selectedShape) {
+        this.endingShape = this.selectedShape;
+        this.isConnectionEnd = true;
+      }
+    }
+
+    switch (this.currentShape) {
+      case SHAPES.RECTANGLE:
+        this.drawRectangle(position, true);
+        adjustToolSection();
+        this.currentShape = SHAPES.CURSOR;
+        break;
+      case SHAPES.CIRCLE:
+        this.drawCircle(position, true);
+        adjustToolSection();
+        this.currentShape = SHAPES.CURSOR;
+        break;
+      case SHAPES.LINE:
+        this.drawLine(position, true);
+        adjustToolSection();
+        this.currentShape = SHAPES.CURSOR;
+        break;
+      case SHAPES.ARROW:
+        this.drawArrowLine(position, true);
+        adjustToolSection();
+        this.currentShape = SHAPES.CURSOR;
+        break;
+      case SHAPES.DRAW:
+        if (this.currentDrawing) {
+          this.shapes.push(this.currentDrawing);
+        }
+        break;
+      case SHAPES.TEXT:
+        this.drawText(position);
+        adjustToolSection();
+        this.currentShape = SHAPES.CURSOR;
+        break;
+    }
+  }
+
+  private startResizing(position: IPoint) {
+    const dx = position.posX - this.startResizingPosition.posX;
+    const dy = position.posY - this.startResizingPosition.posY;
+    this.displayAllShapes();
     this.shapeConnectorIndicator(event);
-    this.eraseShape(event);
-    if (this.isDragging && this.selectedShape) {
-      const dx = position.posX - this.dragStartPosition.posX;
-      const dy = position.posY - this.dragStartPosition.posY;
-      this.selectedShape.move(dx, dy);
-      /* Store previous mouse position */
-      this.dragStartPosition = position;
-      this.displayAllShapes();
-    } else if (this.isErasing) {
-      if (this.currentEraser) {
-        this.currentEraser.addPoint(position);
-        this.currentEraser.draw(this.ctx);
-      }
-    } else if (this.isDrawing) {
-      this.displayAllShapes();
-      this.shapeConnectorIndicator(event);
-      switch (this.currentShape) {
-        case SHAPES.RECTANGLE:
-          this.drawRectangle(position);
-          break;
-        case SHAPES.CIRCLE:
-          this.drawCircle(position);
-          break;
-        case SHAPES.LINE:
-          this.drawLine(position);
-          break;
-        case SHAPES.ARROW:
-          this.drawArrowLine(position);
-          break;
-        case SHAPES.DRAW:
-          if (this.currentDrawing) {
-            this.currentDrawing.strokeWidth = this.selectedWidthSize;
-            this.currentDrawing.addPoint(position);
-            this.currentDrawing.draw(this.ctx);
-          }
-          break;
-        case SHAPES.TEXT:
-          this.drawText(position);
-          break;
-      }
-    } else if (this.isResizing) {
-      const dx = position.posX - this.startResizingPosition.posX;
-      const dy = position.posY - this.startResizingPosition.posY;
-      this.displayAllShapes();
-      this.shapeConnectorIndicator(event);
-      switch (this.selectedShape?.shapeType) {
-        case SHAPES.RECTANGLE:
-          this.selectedShape?.reSize(this.resizeEdge, dx, dy);
-          break;
-        case SHAPES.CIRCLE:
-          this.selectedShape?.reSize(position);
-          break;
-        case SHAPES.LINE:
-          this.selectedShape?.reSize(this.resizeEdge, position);
-          break;
-        case SHAPES.ARROW:
-          this.selectedShape?.reSize(this.resizeEdge, position);
-          break;
-      }
-      this.startResizingPosition = position;
+    switch (this.selectedShape?.shapeType) {
+      case SHAPES.RECTANGLE:
+        this.selectedShape?.reSize(this.resizeEdge, dx, dy);
+        break;
+      case SHAPES.CIRCLE:
+        this.selectedShape?.reSize(position);
+        break;
+      case SHAPES.LINE:
+        this.selectedShape?.reSize(this.resizeEdge, position);
+        break;
+      case SHAPES.ARROW:
+        this.selectedShape?.reSize(this.resizeEdge, position);
+        break;
+    }
+    this.startResizingPosition = position;
+  }
+
+  private startDrawing(position: IPoint) {
+    switch (this.currentShape) {
+      case SHAPES.RECTANGLE:
+        this.drawRectangle(position);
+        break;
+      case SHAPES.CIRCLE:
+        this.drawCircle(position);
+        break;
+      case SHAPES.LINE:
+        this.drawLine(position);
+        break;
+      case SHAPES.ARROW:
+        this.drawArrowLine(position);
+        break;
+      case SHAPES.DRAW:
+        if (this.currentDrawing) {
+          this.currentDrawing.strokeWidth = this.selectedWidthSize;
+          this.currentDrawing.addPoint(position);
+          this.currentDrawing.draw(this.ctx);
+        }
+        break;
+      case SHAPES.TEXT:
+        this.drawText(position);
+        break;
     }
   }
 
-  onMouseUp(event: any) {
-    const position = this.getMousePosition(event);
-    if (this.isDragging) {
-      this.isDragging = false;
-      this.selectedShape = undefined;
-    } else if (this.isDrawing) {
-      this.isDrawing = false;
-
-      /**Ending connection shape */
-      if (this.currentShape === SHAPES.ARROW) {
-        this.locateSelectedShape(position);
-        if (this.selectedShape) {
-          this.endingShape = this.selectedShape;
-          this.isConnectionEnd = true;
-        }
-      }
-
-      switch (this.currentShape) {
-        case SHAPES.RECTANGLE:
-          this.drawRectangle(position, true);
-          adjustToolSection();
-          this.currentShape = SHAPES.CURSOR;
-          break;
-        case SHAPES.CIRCLE:
-          this.drawCircle(position, true);
-          adjustToolSection();
-          this.currentShape = SHAPES.CURSOR;
-          break;
-        case SHAPES.LINE:
-          this.drawLine(position, true);
-          adjustToolSection();
-          this.currentShape = SHAPES.CURSOR;
-          break;
-        case SHAPES.ARROW:
-          this.drawArrowLine(position, true);
-          adjustToolSection();
-          this.currentShape = SHAPES.CURSOR;
-          break;
-        case SHAPES.DRAW:
-          if (this.currentDrawing) {
-            this.shapes.push(this.currentDrawing);
-          }
-          break;
-        case SHAPES.TEXT:
-          this.drawText(position);
-          adjustToolSection();
-          this.currentShape = SHAPES.CURSOR;
-          break;
-      }
-    } else if (this.isResizing) {
-      /**Ending connection shape */
-      if (
-        this.selectedShape?.shapeType === SHAPES.ARROW &&
-        this.resizeConnectionShape
-      ) {
-        this.shapeConnectorIndicator(event);
-        if (this.resizeEdge === "start") {
-          this.selectedShape.position = this.resizeConnectionShape.position;
-        }
-
-        if (this.resizeEdge === "end") {
-          if (this.selectedShape instanceof ArrowLine) {
-            this.selectedShape.end = this.resizeConnectionShape.position;
-          }
-        }
-      }
-
-      this.isResizing = false;
-      this.resizeEdge = null;
-    }
+  private startDragging(position: IPoint, selectedShape: Shape) {
+    const dx = position.posX - this.dragStartPosition.posX;
+    const dy = position.posY - this.dragStartPosition.posY;
+    selectedShape.move(dx, dy);
+    this.dragStartPosition = position;
+    this.displayAllShapes();
   }
-
   /**Edit text */
   editText(event: any): void {
     const currentMousePosition = this.getMousePosition(event);
@@ -529,28 +542,27 @@ export class Canvas {
   ) {
     const width = currentMousePosition.posX - this.startPosition.posX;
     const height = currentMousePosition.posY - this.startPosition.posY;
-    if (!finalize) {
-      const rect = new Rectangle(
-        this.startPosition,
-        { width, height },
-        this.selectedBackgroundColor,
-        this.selectedStrokeColor,
-        this.selectedWidthSize,
-        this.selectedWidthStyle
-      );
-      rect.draw(this.ctx);
-    } else {
-      const newRect = Rectangle.generateShape(
-        this.startPosition,
-        currentMousePosition,
-        this.selectedBackgroundColor,
-        this.selectedStrokeColor,
-        this.selectedWidthSize,
-        this.selectedWidthStyle
-      );
+    const rectangle = finalize
+      ? Rectangle.generateShape(
+          this.startPosition,
+          currentMousePosition,
+          this.selectedBackgroundColor,
+          this.selectedStrokeColor,
+          this.selectedWidthSize,
+          this.selectedWidthStyle
+        )
+      : new Rectangle(
+          this.startPosition,
+          { width, height },
+          this.selectedBackgroundColor,
+          this.selectedStrokeColor,
+          this.selectedWidthSize,
+          this.selectedWidthStyle
+        );
+    rectangle.draw(this.ctx);
+    if (finalize) {
       saveCurrentState(this.shapes, this.undoStack);
-      this.shapes.push(newRect);
-      newRect.draw(this.ctx);
+      this.shapes.push(rectangle);
       clearRedoStack(this.redoStack);
     }
   }
@@ -567,28 +579,27 @@ export class Canvas {
       posY: this.startPosition.posY + radius / 2,
     };
 
-    if (!finalize) {
-      const circle = new Circle(
-        adjustedCenter,
-        radius,
-        this.selectedBackgroundColor,
-        this.selectedStrokeColor,
-        this.selectedWidthSize,
-        this.selectedWidthStyle
-      );
-      circle.draw(this.ctx);
-    } else {
-      const newCircle = Circle.generateCircle(
-        adjustedCenter,
-        radius,
-        this.selectedBackgroundColor,
-        this.selectedStrokeColor,
-        this.selectedWidthSize,
-        this.selectedWidthStyle
-      );
+    const circle = finalize
+      ? Circle.generateCircle(
+          adjustedCenter,
+          radius,
+          this.selectedBackgroundColor,
+          this.selectedStrokeColor,
+          this.selectedWidthSize,
+          this.selectedWidthStyle
+        )
+      : new Circle(
+          adjustedCenter,
+          radius,
+          this.selectedBackgroundColor,
+          this.selectedStrokeColor,
+          this.selectedWidthSize,
+          this.selectedWidthStyle
+        );
+
+    if (finalize) {
       saveCurrentState(this.shapes, this.undoStack);
-      this.shapes.push(newCircle);
-      newCircle.draw(this.ctx);
+      this.shapes.push(circle);
       clearRedoStack(this.redoStack);
     }
   }
