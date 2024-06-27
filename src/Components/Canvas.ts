@@ -24,9 +24,26 @@ import {
   body,
   highlightCurrentSelectedTool,
 } from "../Utils/HighlightSelectedTool";
-import { handleShortcut, toggleSidePanel } from "./UIHandler";
+import {
+  activateRedoUndoBtn,
+  handleShortcut,
+  toggleSidePanel,
+} from "./UIHandler";
 import { getDataFromLocalStorage } from "../Storage/Storage";
 import { exportSelectedShape } from "./ExportHandler";
+import {
+  bringForward,
+  bringToFront,
+  sendBackward,
+  sendToBack,
+} from "./LayerHandler";
+import { deleteSelectedShapes } from "./DeleteShapeHandler";
+import {
+  clearRedoStack,
+  redo,
+  saveCurrentState,
+  undo,
+} from "./UndoRedoHandler";
 export class Canvas {
   private canvas: HTMLCanvasElement;
   private ctx: CanvasRenderingContext2D;
@@ -42,11 +59,9 @@ export class Canvas {
   private selectedShape: Shape | undefined = undefined;
   private resizeEdge: string | null | boolean = null;
   private isResizing: boolean = false;
-  private redoStack: Shape[] = [];
-  private undoStack: Shape[] = [];
+  private redoStack: Shape[][] = [];
+  private undoStack: Shape[][] = [];
   private currentDrawing?: Draw;
-  private isUndoStart: boolean = false;
-  private sizeOfShapesAtUndoStart: number = 0;
   private selectedShapeForAltering: { index: number; shape: Shape }[] = [];
   private selectedShapeIndex: number | null = null;
   private toBeChangeShape: Shape | undefined = undefined;
@@ -78,6 +93,9 @@ export class Canvas {
     this.canvas.addEventListener("mousemove", this.onMouseMove.bind(this));
     this.canvas.addEventListener("mouseup", this.onMouseUp.bind(this));
     this.canvas.addEventListener("dblclick", this.doubleClick.bind(this));
+    document.addEventListener("click", () => {
+      activateRedoUndoBtn(this.undoStack, this.redoStack);
+    });
 
     this.canvas.addEventListener("touchstart", this.onTouchStart.bind(this));
     this.canvas.addEventListener("touchmove", this.onTouchMove.bind(this));
@@ -254,7 +272,6 @@ export class Canvas {
       }
       this.startResizingPosition = position;
     }
-    this.activateRedoUndoBtn(this.shapes, this.redoStack);
   }
 
   onMouseUp(event: any) {
@@ -326,10 +343,6 @@ export class Canvas {
 
       this.isResizing = false;
       this.resizeEdge = null;
-    }
-    /* Clear redo stack if shapes added after undo */
-    if (this.shapes.length > this.sizeOfShapesAtUndoStart) {
-      this.redoStack = [];
     }
   }
 
@@ -444,7 +457,10 @@ export class Canvas {
             shape: tempSelectedShape,
           });
         }
-        this.deleteSelectedShapes();
+        deleteSelectedShapes(
+          this.shapes,
+          this.selectedShapeForAltering[0].index
+        );
       }
     }
   }
@@ -532,8 +548,10 @@ export class Canvas {
         this.selectedWidthSize,
         this.selectedWidthStyle
       );
+      saveCurrentState(this.shapes, this.undoStack);
       this.shapes.push(newRect);
       newRect.draw(this.ctx);
+      clearRedoStack(this.redoStack);
     }
   }
 
@@ -568,8 +586,10 @@ export class Canvas {
         this.selectedWidthSize,
         this.selectedWidthStyle
       );
+      saveCurrentState(this.shapes, this.undoStack);
       this.shapes.push(newCircle);
       newCircle.draw(this.ctx);
+      clearRedoStack(this.redoStack);
     }
   }
 
@@ -597,8 +617,10 @@ export class Canvas {
         this.selectedWidthSize,
         this.selectedWidthStyle
       );
+      saveCurrentState(this.shapes, this.undoStack);
       this.shapes.push(newLine);
       newLine.draw(this.ctx);
+      clearRedoStack(this.redoStack);
     }
   }
 
@@ -629,7 +651,9 @@ export class Canvas {
           this.selectedWidthSize,
           this.selectedWidthStyle
         );
+        saveCurrentState(this.shapes, this.undoStack);
         this.shapes.push(newArrowLine);
+        clearRedoStack(this.redoStack);
       } else {
         const newArrowLine = ArrowLine.generateArrowLine(
           { posX: this.startPosition.posX, posY: this.startPosition.posY },
@@ -639,8 +663,10 @@ export class Canvas {
           this.selectedWidthSize,
           this.selectedWidthStyle
         );
+        saveCurrentState(this.shapes, this.undoStack);
         this.shapes.push(newArrowLine);
         newArrowLine.draw(this.ctx);
+        clearRedoStack(this.redoStack);
       }
       this.isConnectionStart = false;
       this.isConnectionEnd = false;
@@ -685,7 +711,9 @@ export class Canvas {
             boundingBox,
             this.selectedStrokeColor
           );
+          saveCurrentState(this.shapes, this.undoStack);
           this.shapes.push(newText);
+          clearRedoStack(this.redoStack);
           this.displayAllShapes();
         }
       }
@@ -699,81 +727,22 @@ export class Canvas {
     }
   }
 
-  /* Undo & Redo */
-  private undo() {
-    let lastMomento;
-    this.isUndoStart = true;
-    if (this.undoStack.length > 0) {
-      lastMomento = this.undoStack.pop();
-      if (lastMomento) {
-        this.redoStack.push(lastMomento);
-        this.shapes.push(lastMomento);
-        this.displayAllShapes();
-      }
-    } else {
-      lastMomento = this.shapes.pop();
-      if (lastMomento) {
-        this.redoStack.push(lastMomento);
-        this.displayAllShapes();
-      }
-    }
-    if (this.isUndoStart) {
-      this.sizeOfShapesAtUndoStart = this.shapes.length;
-    }
-  }
-
-  private redo() {
-    if (this.redoStack.length > 0) {
-      const lastMomento = this.redoStack.pop();
-      if (lastMomento) {
-        this.shapes.push(lastMomento);
-        this.displayAllShapes();
-      }
-    }
-  }
-
   /*Keyboard actions*/
   private keyboardActions(event: KeyboardEvent) {
     if (event.ctrlKey && event.key === "z") {
       event.preventDefault();
-      this.undo();
+      undo(this.shapes, this.undoStack, this.redoStack);
+      this.displayAllShapes();
     }
     if (event.ctrlKey && event.key === "y") {
       event.preventDefault();
-      this.redo();
+      redo(this.shapes, this.undoStack, this.redoStack);
+      this.displayAllShapes();
     }
     if (event.key === "Delete") {
-      this.deleteSelectedShapes();
-    }
-  }
-
-  private deleteSelectedShapes() {
-    if (this.selectedShapeForAltering.length > 0) {
-      this.selectedShapeForAltering.forEach((selected) => {
-        const index = selected.index;
-        if (index !== undefined && index >= 0 && index < this.shapes.length) {
-          this.undoStack.push(this.shapes[index]);
-          this.shapes.splice(index, 1);
-        }
-      });
-      this.clearCanvas();
+      saveCurrentState(this.shapes, this.undoStack);
+      deleteSelectedShapes(this.shapes, this.selectedShapeForAltering[0].index);
       this.displayAllShapes();
-      this.selectedShapeForAltering = [];
-    }
-  }
-
-  private activateRedoUndoBtn(undoStack: Shape[], redoStack: Shape[]) {
-    const undoBtn = document.querySelector("#undoBtn") as HTMLButtonElement;
-    const redoBtn = document.querySelector("#redoBtn") as HTMLButtonElement;
-    if (undoStack.length === 0) {
-      undoBtn.style.opacity = "0.4";
-    } else {
-      undoBtn.style.opacity = "1";
-    }
-    if (redoStack.length === 0) {
-      redoBtn.style.opacity = "0.4";
-    } else {
-      redoBtn.style.opacity = "1";
     }
   }
 
@@ -940,79 +909,7 @@ export class Canvas {
     }
   }
 
-  /**INDEXING SHAPES */
-  private sendToBack() {
-    if (this.selectedShapeForAltering.length < 1) return;
-    const selectedIndex = this.selectedShapeForAltering[0].index;
-    if (selectedIndex === 0) return;
-    let tempShapes: Shape[] = [];
-    tempShapes.push(this.selectedShapeForAltering[0].shape);
-    this.shapes.forEach((shape, index) => {
-      if (index !== this.selectedShapeForAltering[0].index) {
-        tempShapes.push(shape);
-      }
-    });
-    this.shapes = [];
-    tempShapes.forEach((shape) => {
-      this.shapes.push(shape);
-    });
-    this.deselectPreviouslySelectedShape(
-      this.selectedShapeForAltering[0].shape
-    );
-    this.displayAllShapes();
-    this.selectedShapeForAltering = [];
-  }
-
-  private bringToFront() {
-    if (this.selectedShapeForAltering.length < 1) return;
-    const selectedIndex = this.selectedShapeForAltering[0].index;
-    if (selectedIndex === this.shapes.length - 1) return;
-    let tempShapes: Shape[] = [];
-    this.shapes.forEach((shape, index) => {
-      if (index !== selectedIndex) {
-        tempShapes.push(shape);
-      }
-    });
-    tempShapes.push(this.selectedShapeForAltering[0].shape);
-    this.shapes = [];
-    tempShapes.forEach((shape) => {
-      this.shapes.push(shape);
-    });
-    this.deselectPreviouslySelectedShape(
-      this.selectedShapeForAltering[0].shape
-    );
-    this.displayAllShapes();
-    this.selectedShapeForAltering = [];
-  }
-
-  private sendBackward() {
-    if (this.selectedShapeForAltering.length === 0) return;
-    const selectedIndex = this.selectedShapeForAltering[0].index;
-    if (selectedIndex === 0) return;
-    const temp = this.shapes[selectedIndex];
-    this.shapes[selectedIndex] = this.shapes[selectedIndex - 1];
-    this.shapes[selectedIndex - 1] = temp;
-    this.deselectPreviouslySelectedShape(
-      this.selectedShapeForAltering[0].shape
-    );
-    this.displayAllShapes();
-    this.selectedShapeForAltering = [];
-  }
-
-  private bringForward() {
-    if (this.selectedShapeForAltering.length === 0) return;
-    const selectedIndex = this.selectedShapeForAltering[0].index;
-    if (selectedIndex === this.shapes.length - 1) return;
-    const temp = this.shapes[selectedIndex];
-    this.shapes[selectedIndex] = this.shapes[selectedIndex + 1];
-    this.shapes[selectedIndex + 1] = temp;
-    this.deselectPreviouslySelectedShape(
-      this.selectedShapeForAltering[0].shape
-    );
-    this.displayAllShapes();
-    this.selectedShapeForAltering = [];
-  }
-
+  /** Layer manager */
   private layerManager() {
     document
       .querySelector(".layer__container")
@@ -1025,14 +922,15 @@ export class Canvas {
             button.style.backgroundColor = "#EFEFEF";
           }, 700);
           if (button.id === "toBack") {
-            this.sendToBack();
+            sendToBack(this.shapes, this.selectedShapeForAltering[0].index);
           } else if (button.id === "backward") {
-            this.sendBackward();
+            sendBackward(this.shapes, this.selectedShapeForAltering[0].index);
           } else if (button.id === "bringForward") {
-            this.bringForward();
+            bringForward(this.shapes, this.selectedShapeForAltering[0].index);
           } else if (button.id === "toFront") {
-            this.bringToFront();
+            bringToFront(this.shapes, this.selectedShapeForAltering[0].index);
           }
+          this.displayAllShapes();
         });
       });
   }
@@ -1046,7 +944,7 @@ export class Canvas {
   }
 
   private sidePanelHandler() {
-    toggleSidePanel(this.isShowingSidePanel)
+    toggleSidePanel(this.isShowingSidePanel);
   }
 
   /**Export selected shape */
@@ -1068,11 +966,13 @@ export class Canvas {
           if (button.id === "undoBtn") {
             button.style.borderTopLeftRadius = "5px";
             button.style.borderBottomLeftRadius = "5px";
-            this.undo();
+            undo(this.shapes, this.undoStack, this.redoStack);
+            this.displayAllShapes();
           } else if (button.id === "redoBtn") {
             button.style.borderTopRightRadius = "5px";
             button.style.borderBottomRightRadius = "5px";
-            this.redo();
+            redo(this.shapes, this.undoStack, this.redoStack);
+            this.displayAllShapes();
           }
           setTimeout(() => {
             button.style.border = "none";
@@ -1095,7 +995,11 @@ export class Canvas {
           }, 700);
           const id = button.id;
           if (id === "deleteBtn") {
-            this.deleteSelectedShapes();
+            deleteSelectedShapes(
+              this.shapes,
+              this.selectedShapeForAltering[0].index
+            );
+            this.displayAllShapes();
           } else if (id === "exportBtn") {
             this.exportHandler();
           } else if (id === "saveBtn") {
