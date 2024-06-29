@@ -596,7 +596,7 @@ export class Canvas {
           this.selectedWidthSize,
           this.selectedWidthStyle
         );
-
+    circle.draw(this.ctx);
     if (finalize) {
       saveCurrentState(this.shapes, this.undoStack);
       this.shapes.push(circle);
@@ -1006,6 +1006,7 @@ export class Canvas {
           }, 700);
           const id = button.id;
           if (id === "deleteBtn") {
+            saveCurrentState(this.shapes, this.undoStack);
             deleteSelectedShapes(
               this.shapes,
               this.selectedShapeForAltering[0].index

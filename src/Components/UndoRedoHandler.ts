@@ -38,6 +38,6 @@ export function redo(
   }
 }
 
-export function clearRedoStack(redoStack: Shape[][]){
-    redoStack = [];
+export function clearRedoStack(redoStack: Shape[][]) {
+  redoStack.length = 0;
 }
