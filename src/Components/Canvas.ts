@@ -120,9 +120,7 @@ export class Canvas {
   onTouchStart(event: TouchEvent) {
     event.preventDefault();
     this.onMouseDown(event);
-    if (this.currentShape !== SHAPES.DRAW) {
-      this.isShowingSidePanel = false;
-    }
+    toggleSidePanel(this.isShowingSidePanel);
   }
   onTouchMove(event: TouchEvent) {
     event.preventDefault();
@@ -138,7 +136,6 @@ export class Canvas {
   /**Edit text */
   onDoubleClick(event: any) {
     this.editText(event);
-    toggleSidePanel(this.isShowingSidePanel);
   }
 
   onMouseMove(event: any) {
@@ -477,6 +474,7 @@ export class Canvas {
           this.shapes,
           this.selectedShapeForAltering[0].index
         );
+        this.displayAllShapes();
       }
     }
   }
