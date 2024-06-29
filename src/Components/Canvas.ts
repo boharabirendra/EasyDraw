@@ -127,15 +127,18 @@ export class Canvas {
   onTouchMove(event: TouchEvent) {
     event.preventDefault();
     this.onMouseMove(event);
+    toggleSidePanel(this.isShowingSidePanel);
   }
   onTouchEnd(event: TouchEvent) {
     event.preventDefault();
     this.onMouseUp(event);
+    toggleSidePanel(this.isShowingSidePanel);
   }
 
   /**Edit text */
   onDoubleClick(event: any) {
     this.editText(event);
+    toggleSidePanel(this.isShowingSidePanel);
   }
 
   onMouseMove(event: any) {
