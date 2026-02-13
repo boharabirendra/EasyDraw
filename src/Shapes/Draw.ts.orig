@@ -38,7 +38,7 @@ export class Draw extends Shape {
 
     tempContext.beginPath();
     tempContext.moveTo(this.path[0].posX, this.path[0].posY);
-    for (let i = 1; i < this.path.length; i++) {h; i++) {
+    for (let i = 1; i < this.path.length; i++) {
       tempContext.lineTo(this.path[i].posX, this.path[i].posY);
     }
     tempContext.lineWidth = this.strokeWidth;

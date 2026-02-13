@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
@@ -125,7 +125,7 @@
         <div class="color-picker__top-picks background__color__container">
           <button
             class="color-picker__button"
-            style="background-color: transparent; box-shadow: 0px 0px 1px gray;"
+            style="background-color: transparent; box-shadow: 0px 0px 1px gray"
             title="transparent"
             data-color="transparent"
           ></button>
@@ -207,31 +207,31 @@
             <img src="./src/assets/Images/delete.png" alt="Delete" />
           </button>
           <button id="exportBtn" title="Export image">
-            <img src="./src/assets/Images/export.png" alt="Export">
+            <img src="./src/assets/Images/export.png" alt="Export" />
           </button>
           <button id="saveBtn" title="Save">
-            <img src="./src/assets/Images/saved.png" alt="Saved">
+            <img src="./src/assets/Images/saved.png" alt="Saved" />
           </button>
         </div>
       </div>
     </div>
     <div class="shortcut_key_container">
-        <div>
-          <button id="shortcut">Shortcut</button>
-        </div>
-        <div id="shortcut_items">
-          <ol>
-            <li>Ctrl + z (Undo)</li>
-            <li>Ctrl + y (Redo)</li>
-            <li>Delete key to selected shape</li>
-            <li>Double click to add text</li>
-          </ol>
-        </div>
-    </div>  
+      <div>
+        <button id="shortcut">Shortcut</button>
+      </div>
+      <div id="shortcut_items">
+        <ol>
+          <li>Ctrl + z (Undo)</li>
+          <li>Ctrl + y (Redo)</li>
+          <li>Delete key to selected shape</li>
+          <li>Double click to add text</li>
+        </ol>
+      </div>
+    </div>
     <div id="app">
       <canvas id="canvas"></canvas>
     </div>
-    <img id="exportedImage" style="visibility: hidden;" alt="Exported PNG">
+    <img id="exportedImage" style="visibility: hidden" alt="Exported PNG" />
     <script type="module" src="/src/main.ts"></script>
   </body>
 </html>
