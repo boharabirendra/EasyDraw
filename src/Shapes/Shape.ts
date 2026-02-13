@@ -8,7 +8,7 @@ export abstract class Shape {
   private _fillColor: string;
   private _strokeColor: string;
   private _strokeWidth: number;
-  private _strokeStyle: number[];
+  private _strokeStyle: number[]; // Add a semicolon here
 
   constructor(
     position: IPoint,
