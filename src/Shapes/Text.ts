@@ -37,7 +37,7 @@ export class Text extends Shape {
   draw(ctx: CanvasRenderingContext2D) {
     ctx.font = "24px Virgil";
     ctx.save();
-    ctx.fillStyle = "white";
+    ctx.fillStyle = this.fillColor;
     ctx.fillRect(
       this.boundingBox.x - 5,
       this.boundingBox.y + 14,
