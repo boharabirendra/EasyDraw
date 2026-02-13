@@ -101,7 +101,7 @@ export class Canvas {
     this.canvas.addEventListener("touchmove", this.onTouchMove.bind(this));
     this.canvas.addEventListener("touchend", this.onTouchEnd.bind(this));
 
-    document.addEventListener("click", this.sidePanelHandler.bind(this));
+    document.addEventListener("click", (event: MouseEvent) => this.handleCanvasClick(event));
     document.addEventListener("keydown", this.keyboardActions.bind(this));
 
     /* Function call */
@@ -955,8 +955,14 @@ export class Canvas {
     }
   }
 
-  private sidePanelHandler() {
-    toggleSidePanel(this.isShowingSidePanel);
+  private handleCanvasClick(event: MouseEvent) {
+    if (this.isShowingSidePanel) {
+      toggleSidePanel(this.isShowingSidePanel);
+    }
+    const shortcutItemsEl = document.querySelector("#shortcut_items");
+    if (shortcutItemsEl && shortcutItemsEl.style.display === "block") {
+      shortcutItemsEl.style.display = "none";
+    }
   }
 
   /**Export selected shape */
