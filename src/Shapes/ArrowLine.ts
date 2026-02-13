@@ -1,6 +1,6 @@
 import {
   ARROW_HEAD_LENGTH,
-  EDGE_DETECTION_WIDTH,
+  EDGE_DETECTION_WIDTH || 0,
   SELECTED_SHAPE_INDICATOR_CIRCLE_RADIUS,
 } from "../Constants/Constants";
 import { IPoint, SHAPES, selectionIndicateCircle } from "../Utils/Common";
