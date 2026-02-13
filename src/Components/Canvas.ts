@@ -687,7 +687,7 @@ export class Canvas {
 
   /* Draw text */
   private drawText(position: IPoint, prevText?: string) {
-    const input = document.createElement("textArea") as HTMLTextAreaElement;
+    const input = document.createElement("textarea") as HTMLTextAreaElement;
     input.style.position = "absolute";
     input.style.border = "none";
     input.style.outline = "none";
