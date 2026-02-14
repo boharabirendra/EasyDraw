@@ -3,20 +3,32 @@ import { Shape } from "../Shapes/Shape";
 /**Shortcut section */
 export function handleShortcut() {
   const shortcutItemsEl = document.querySelector(
-    "#shortcut_items"
+    '#shortcut_items'
   ) as HTMLDivElement;
-  shortcutItemsEl.style.display = "none";
+  shortcutItemsEl.style.display = 'none';
   let flag = false;
-  const shortcutEl = document.querySelector("#shortcut") as HTMLButtonElement;
-  shortcutEl.addEventListener("click", () => {
+  const shortcutEl = document.querySelector('#shortcut') as HTMLButtonElement;
+  shortcutEl.addEventListener('click', () => {
     if (flag) {
-      shortcutItemsEl.style.display = "none";
+      shortcutItemsEl.style.display = 'none';
       flag = false;
     } else {
-      shortcutItemsEl.style.display = "block";
+      shortcutItemsEl.style.display = 'block';
       flag = true;
     }
   });
+  document.addEventListener('click', handleShortcutClickOutside, true);
+}
+
+function handleShortcutClickOutside(event: MouseEvent) {
+  const shortcutItemsEl = document.querySelector('#shortcut_items') as HTMLDivElement;
+  const shortcutEl = document.querySelector('#shortcut') as HTMLButtonElement;
+  const isClickInside = shortcutEl.contains(event.target as Node) ||
+    shortcutItemsEl.contains(event.target as Node);
+  if (!isClickInside && shortcutItemsEl.style.display === 'block') {
+    shortcutItemsEl.style.display = 'none';
+    flag = false;
+  }
 }
 
 export function toggleSidePanel(isShowingSidePanel: boolean) {

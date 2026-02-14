@@ -114,7 +114,7 @@ export class Canvas {
     this.undoRedoManager();
     this.handleActions();
     this.fetchSavedShapes();
-    handleShortcut();
+    document.addEventListener("click", handleShortcutClickOutside, true);
   }
 
   onTouchStart(event: TouchEvent) {
