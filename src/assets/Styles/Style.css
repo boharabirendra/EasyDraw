@@ -149,13 +149,14 @@ body {
   border: none;
   cursor: pointer;
 }
-.panelColumn .stroke__style button,
-.panelColumn .layer__container button,
-.panelColumn .actions button {
+.panelColumn.stroke__style button,
+.panelColumn.layer__container button,
+.panelColumn.actions button {
   padding: 0.3rem 0.5rem;
-  border-radius: 0.25rem;
-  background-color: "#EFEFEF";
-  border: none;
+  border-radius: 12px;
+  background-color: red;
+  border: 2px solid transparent;
+  color: white;
   cursor: pointer;
 }
 .panelColumn .thin div,
@@ -184,15 +185,15 @@ body {
   top: 2%;
   left: 2%;
   width: 290px;
-}
 .shortcut_key_container button {
   padding: 0.35rem 0.75rem;
-  border-radius: 5px;
-  border: none;
-  font-family: "Virgil";
-  font-size: 14px;
+  border-radius: 12px;
+  background-color: red;
+  border: 2px solid transparent;
+  color: white;
   cursor: pointer;
   margin-bottom: 25px;
+}
 }
 .shortcut_key_container #shortcut_items {
   padding: 0.75rem 2rem;
