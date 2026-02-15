@@ -45,17 +45,20 @@
     position: absolute;
   }
   
-  .toolbar_content {
+.toolbar_content {
     display: flex;
     gap: 5px;
     justify-content: space-between;
     align-items: center;
 
-  
     button {
       transition: background-color 0.3s ease;
+      background-color: red;
+      border-radius: 12px;
+      border-width: 2px;
+      color: white;
     }
-  
+
     .toolbar_icon {
       button {
         cursor: pointer;
@@ -64,7 +67,7 @@
         padding: 8px 12px;
         border-radius: 10px;
         box-shadow: 0px 0px 0.5 gray;
-  
+
         &:hover {
           background-color: #e0dfff;
         }

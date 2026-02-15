@@ -22,10 +22,11 @@ export enum SHAPES {
   DRAW,
 }
 
-export function adjustToolSection() {
+function adjustToolSection() {
   removeBg();
   cursorBtn.style.backgroundColor = "#E0DFFF";
   body.style.cursor = "default";
+  cursorBtn.style.borderWidth = '2px';
 }
 
 export function selectionIndicateCircle(
