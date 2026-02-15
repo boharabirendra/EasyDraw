@@ -213,33 +213,34 @@
   }
 
   .shortcut_key_container{
-    display: flex;
-    flex-direction: column;
-    position: absolute;
-    top: 2%;
-    left: 2%;
-    width: 290px;
-    button{
-      padding: 0.35rem 0.75rem;
-      border-radius: 5px;
-      border: none;
-      font-family: "Virgil";
-      font-size: 14px;
-      cursor: pointer;
-      margin-bottom: 25px;
-    }
-    #shortcut_items{
-      padding: 0.75rem 2rem;
-      border-radius: 5px;
-      background-color: "white";
-      box-shadow: 0px 0px 0.9310142993927002px 0px rgba(0, 0, 0, 0.17),
+.shortcut_key_container {
+  display: flex;
+  flex-direction: column;
+  position: absolute;
+  top: 2%;
+  left: 2%;
+  width: 290px;
+  button {
+    padding: 0.35rem 0.75rem;
+    border-radius: 12px;
+    border: 2px solid transparent;
+    font-family: "Virgil";
+    font-size: 14px;
+    cursor: pointer;
+    margin-bottom: 25px;
+    background-color: red;
+    color: white;
+  }
+  #shortcut_items {
+    padding: 0.75rem 2rem;
+    border-radius: 5px;
+    background-color: white;
+    box-shadow:
+      0px 0px 0.9310142993927002px 0px rgba(0, 0, 0, 0.17),
       0px 0px 3.1270833015441895px 0px rgba(0, 0, 0, 0.08),
       0px 7px 14px 0px rgba(0, 0, 0, 0.05);
-    }
   }
-  
-
-  @media (max-width: 768px){
+}
       .toolbar_container{
         gap: 2px;
         button{
