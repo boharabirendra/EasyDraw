@@ -23,8 +23,7 @@ export enum SHAPES {
 }
 
 export function adjustToolSection() {
-  removeBg();
-  cursorBtn.style.backgroundColor = "#E0DFFF";
+  cursorBtn.style.backgroundColor = "#E0DFFF";  cursorBtn.style.backgroundColor = "#E0DFFF";
   body.style.cursor = "default";
 }
 
