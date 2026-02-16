@@ -101,7 +101,7 @@ export class Canvas {
     this.canvas.addEventListener("touchmove", this.onTouchMove.bind(this));
     this.canvas.addEventListener("touchend", this.onTouchEnd.bind(this));
 
-    document.addEventListener("click", this.sidePanelHandler.bind(this));
+    document.addEventListener("click", (event: MouseEvent) => { if (!shortcutEl.contains(event.target as Node) && !shortcutItemsEl.contains(event.target as Node)) { if (flag) { shortcutItemsEl.style.display = "none"; flag = false; } } });
     document.addEventListener("keydown", this.keyboardActions.bind(this));
 
     /* Function call */
