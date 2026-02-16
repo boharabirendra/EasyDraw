@@ -221,8 +221,10 @@
     width: 290px;
     button{
       padding: 0.35rem 0.75rem;
-      border-radius: 5px;
-      border: none;
+      border-radius: 12px;
+      border: 2px solid;
+      background-color: red;
+      color: white;
       font-family: "Virgil";
       font-size: 14px;
       cursor: pointer;
@@ -237,8 +239,6 @@
       0px 7px 14px 0px rgba(0, 0, 0, 0.05);
     }
   }
-  
-
   @media (max-width: 768px){
       .toolbar_container{
         gap: 2px;
