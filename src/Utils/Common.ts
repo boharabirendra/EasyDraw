@@ -31,7 +31,7 @@ export function adjustToolSection() {
 export function selectionIndicateCircle(
   ctx: CanvasRenderingContext2D,
   center: IPoint,
-  radius: number
+  radius: number,
 ) {
   ctx.save();
   ctx.beginPath();
@@ -46,14 +46,14 @@ export function selectionIndicateCircle(
 }
 
 export function getLeftTopCircleCenter(position: IPoint): IPoint {
-  const posX = position.posX ;
+  const posX = position.posX;
   const posY = position.posY;
   return { posX, posY };
 }
 
 export function getLeftBottomCircleCenter(
   position: IPoint,
-  dimension: IDimension
+  dimension: IDimension,
 ): IPoint {
   const posX = position.posX;
   const posY = position.posY + dimension.height;
@@ -62,7 +62,7 @@ export function getLeftBottomCircleCenter(
 
 export function getRightTopCircleCenter(
   position: IPoint,
-  dimension: IDimension
+  dimension: IDimension,
 ): IPoint {
   const posX = position.posX + dimension.width;
   const posY = position.posY;
@@ -71,7 +71,7 @@ export function getRightTopCircleCenter(
 
 export function getRightBottomCircleCenter(
   position: IPoint,
-  dimension: IDimension
+  dimension: IDimension,
 ): IPoint {
   const posX = position.posX + dimension.width;
   const posY = position.posY + dimension.height;
@@ -85,12 +85,22 @@ export function selectionIndicateRectangle(
 ) {
   ctx.save();
   ctx.beginPath();
-  ctx.rect(position.posX, position.posY, dimension.width, dimension.height); 
+  ctx.rect(position.posX, position.posY, dimension.width, dimension.height);
   ctx.strokeStyle = "gray";
   ctx.lineWidth = 0.1;
   ctx.fillStyle = "transparent";
-  ctx.fill(); 
-  ctx.stroke(); 
+  ctx.fill();
+  ctx.stroke();
   ctx.restore();
 }
 
+/**
+ * Fuction that calculates the even or odd number.
+ */
+export function calculateEvenOrOdd(num: number) {
+  if (num % 2 == 1) {
+    console.log("Number is even ", num);
+  } else {
+    console.log("Number is odd ", num);
+  }
+}

@@ -1,267 +1,267 @@
 @font-face {
-    font-family: 'Virgil';
-    src: url('../fonts/Virgil.woff2') format('woff2');
-    font-weight: normal;
-    font-style: normal;
-  }
-  
-  canvas {
-    font-family: 'Virgil';
-    width: 100%;
-  }
-  
-  * {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
+  font-family: "Virgil";
+  src: url("../fonts/Virgil.woff2") format("woff2");
+  font-weight: normal;
+  font-style: normal;
+}
+
+canvas {
+  font-family: "Virgil";
+  width: 100%;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  font-family: "Virgil";
+}
+
+.toolbar_container {
+  width: 100%;
+  max-width: 440px;
+  left: 50%;
+  top: 2%;
+  transform: translateX(-50%);
+
+  padding: 6px 8px;
+  box-shadow:
+    0px 0px 0.9310142993927002px 0px rgba(0, 0, 0, 0.17),
+    0px 0px 3.1270833015441895px 0px rgba(0, 0, 0, 0.08),
+    0px 7px 14px 0px rgba(0, 0, 0, 0.05);
+  border-radius: 10px;
+  background-color: white;
+  position: absolute;
+}
+
+.toolbar_content {
+  display: flex;
+  gap: 5px;
+  justify-content: space-between;
+  align-items: center;
+
+  button {
+    transition: background-color 0.3s ease;
   }
 
-  html{
-    width: 100%;
-    height: 100%;
-    overflow: hidden;
-  }
-  
-  body {
-    width: 100%;
-    height: 100%;
-    overflow: hidden;
-    font-family: "Virgil";
-  }
-
-  .toolbar_container{
-    width: 100%;
-    max-width: 440px;
-    left: 50%;
-    top: 2%;
-    transform: translateX(-50%);
-
-    padding: 6px 8px;
-    box-shadow: 0px 0px 0.9310142993927002px 0px rgba(0, 0, 0, 0.17),
-      0px 0px 3.1270833015441895px 0px rgba(0, 0, 0, 0.08),
-      0px 7px 14px 0px rgba(0, 0, 0, 0.05);
-    border-radius: 10px;
-    background-color: white;
-    position: absolute;
-  }
-  
-  .toolbar_content {
-    display: flex;
-    gap: 5px;
-    justify-content: space-between;
-    align-items: center;
-
-  
+  .toolbar_icon {
     button {
-      transition: background-color 0.3s ease;
-    }
-  
-    .toolbar_icon {
-      button {
-        cursor: pointer;
-        background-color: transparent;
-        border: none;
-        padding: 8px 12px;
-        border-radius: 10px;
-        box-shadow: 0px 0px 0.5 gray;
-  
-        &:hover {
-          background-color: #e0dfff;
-        }
-      }
-    }
-  }
-  
-  .left_bottom_container {
-    display: flex;
-    gap: 15px;
-    position: absolute;
-    bottom: 3%;
-    left: 2%;
-    cursor: pointer;
-  
-    .zoom {
-      background-color: #ececf4;
-      border-radius: 5px;
-      display: flex;
-      align-items: center;
-      column-gap: 0.5rem;
-      justify-content: center;
-  
-      &__out,
-      &__in,
-      &__percentage {
-        opacity: 0.5;
-        cursor: pointer;
-        border: none;
-        background-color: transparent;
-      }
-  
-      &__out,
-      &__in {
-        padding: 8px 14px;
-      }
-  
-      &__percentage {
-        padding-bottom: 3px;
-      }
-    }
-  
-    .redo_undo {
-      display: flex;
-      gap: 10px;
-      background-color: #ececf4;
-      border-radius: 5px;
-  
-      button,
-      img {
-        border: none;
-        background-color: transparent;
-      }
-  
-      img {
-        width: 36px;
-        cursor: pointer;
-        padding: 6px 10px;
-        border-radius: 5px;
-      }
-    }
-  }
-  
-  .panelColumn {
-    position: absolute;
-    display: flex;
-    flex-direction: column;
-    row-gap: 1.75rem;
-    padding: 0.75rem 1rem;
-    overflow-y: auto;
-    box-shadow: 0px 0px 0.9310142993927002px 0px rgba(0, 0, 0, 0.17),
-      0px 0px 3.1270833015441895px 0px rgba(0, 0, 0, 0.08),
-      0px 7px 14px 0px rgba(0, 0, 0, 0.05);
-    border-radius: 0.5rem;
-    top: 12%;
-    left: 2%;
-    width: 200px;
-    cursor: default;
-    background-color: white;
-    display: none;
-  
-    .panel__section {
-      margin-bottom: 1rem;
-    }
-  
-    h3 {
-      margin: 0;
-      margin-bottom: 0.45rem;
-      font-size: 0.75rem;
-      color: #1b1b1f;
-      font-weight: 400;
-      display: block;
-    }
-  
-    .color-picker__button {
-      width: 1.35rem;
-      height: 1.35rem;
-      border-radius: 0.25rem;
       cursor: pointer;
-      border: 1px solid #d6d6d6;
-    }
-  
-    .stroke__width {
-      button {
-        padding: 0.75rem;
-        border-radius: 0.25rem;
-        background-color: '#EFEFEF';
-        border: none;
-        cursor: pointer;
-      }
-    }
-  
-    .stroke__style,
-    .layer__container,
-    .actions {
-      button {
-        padding: 0.3rem 0.5rem;
-        border-radius: 0.25rem;
-        background-color: '#EFEFEF';
-        border: none;
-        cursor: pointer;
-      }
-    }
-  
-    .thin div,
-    .bold div,
-    .extra__bold div {
-      width: 10px;
-      border-radius: 4px;
-    }
-  
-    .thin div {
-      height: 2px;
-      background-color: rgb(216, 216, 216);
-    }
-  
-    .bold div {
-      height: 3px;
-      background-color: rgb(114, 114, 114);
-    }
-  
-    .extra__bold div {
-      height: 4px;
-      background-color: rgb(37, 36, 36);
-    }
-  }
-
-  .shortcut_key_container{
-    display: flex;
-    flex-direction: column;
-    position: absolute;
-    top: 2%;
-    left: 2%;
-    width: 290px;
-    button{
-      padding: 0.35rem 0.75rem;
-      border-radius: 5px;
+      background-color: transparent;
       border: none;
-      font-family: "Virgil";
-      font-size: 14px;
-      cursor: pointer;
-      margin-bottom: 25px;
+      padding: 8px 12px;
+      border-radius: 10px;
+      box-shadow: 0px 0px 0.5 gray;
+
+      &:hover {
+        background-color: #e0dfff;
+      }
     }
-    #shortcut_items{
-      padding: 0.75rem 2rem;
+  }
+}
+
+.left_bottom_container {
+  display: flex;
+  gap: 15px;
+  position: absolute;
+  bottom: 3%;
+  left: 2%;
+  cursor: pointer;
+
+  .zoom {
+    background-color: #ececf4;
+    border-radius: 5px;
+    display: flex;
+    align-items: center;
+    column-gap: 0.5rem;
+    justify-content: center;
+
+    &__out,
+    &__in,
+    &__percentage {
+      opacity: 0.5;
+      cursor: pointer;
+      border: none;
+      background-color: transparent;
+    }
+
+    &__out,
+    &__in {
+      padding: 8px 14px;
+    }
+
+    &__percentage {
+      padding-bottom: 3px;
+    }
+  }
+
+  .redo_undo {
+    display: flex;
+    gap: 10px;
+    background-color: #ececf4;
+    border-radius: 5px;
+
+    button,
+    img {
+      border: none;
+      background-color: transparent;
+    }
+
+    img {
+      width: 36px;
+      cursor: pointer;
+      padding: 6px 10px;
       border-radius: 5px;
-      background-color: "white";
-      box-shadow: 0px 0px 0.9310142993927002px 0px rgba(0, 0, 0, 0.17),
+    }
+  }
+}
+
+.panelColumn {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  row-gap: 1.75rem;
+  padding: 0.75rem 1rem;
+  overflow-y: auto;
+  box-shadow:
+    0px 0px 0.9310142993927002px 0px rgba(0, 0, 0, 0.17),
+    0px 0px 3.1270833015441895px 0px rgba(0, 0, 0, 0.08),
+    0px 7px 14px 0px rgba(0, 0, 0, 0.05);
+  border-radius: 0.5rem;
+  top: 12%;
+  left: 2%;
+  width: 200px;
+  cursor: default;
+  background-color: white;
+  display: none;
+
+  .panel__section {
+    margin-bottom: 1rem;
+  }
+
+  h3 {
+    margin: 0;
+    margin-bottom: 0.45rem;
+    font-size: 0.75rem;
+    color: #1b1b1f;
+    font-weight: 400;
+    display: block;
+  }
+
+  .color-picker__button {
+    width: 1.35rem;
+    height: 1.35rem;
+    border-radius: 0.25rem;
+    cursor: pointer;
+    border: 1px solid #d6d6d6;
+  }
+
+  .stroke__width {
+    button {
+      padding: 0.75rem;
+      border-radius: 0.25rem;
+      background-color: "#EFEFEF";
+      border: none;
+      cursor: pointer;
+    }
+  }
+
+  .stroke__style,
+  .layer__container,
+  .actions {
+    button {
+      padding: 0.3rem 0.5rem;
+      border-radius: 0.25rem;
+      background-color: "#EFEFEF";
+      border: none;
+      cursor: pointer;
+    }
+  }
+
+  .thin div,
+  .bold div,
+  .extra__bold div {
+    width: 10px;
+    border-radius: 4px;
+  }
+
+  .thin div {
+    height: 2px;
+    background-color: rgb(216, 216, 216);
+  }
+
+  .bold div {
+    height: 3px;
+    background-color: rgb(114, 114, 114);
+  }
+
+  .extra__bold div {
+    height: 4px;
+    background-color: rgb(37, 36, 36);
+  }
+}
+
+.shortcut_key_container {
+  display: flex;
+  flex-direction: column;
+  position: absolute;
+  top: 2%;
+  left: 2%;
+  width: 290px;
+  button {
+    padding: 0.35rem 0.75rem;
+    border-radius: 5px;
+    border: none;
+    font-family: "Virgil";
+    font-size: 14px;
+    cursor: pointer;
+    margin-bottom: 25px;
+  }
+  #shortcut_items {
+    padding: 0.75rem 2rem;
+    border-radius: 5px;
+    background-color: "white";
+    box-shadow:
+      0px 0px 0.9310142993927002px 0px rgba(0, 0, 0, 0.17),
       0px 0px 3.1270833015441895px 0px rgba(0, 0, 0, 0.08),
       0px 7px 14px 0px rgba(0, 0, 0, 0.05);
+  }
+}
+
+@media (max-width: 768px) {
+  .toolbar_container {
+    gap: 2px;
+    button {
+      padding: 4px 6px;
+    }
+    .toolbar_icon {
+      img {
+        width: 14px;
+      }
     }
   }
-  
-
-  @media (max-width: 768px){
-      .toolbar_container{
-        gap: 2px;
-        button{
-          padding: 4px 6px;
-        }
-        .toolbar_icon{
-          img{
-            width: 14px;
-          }
-        }
-      }
-      .shortcut_key_container{
-        top: 9%
-      }
-
-      .panelColumn {
-        row-gap: 1.75rem;
-        padding: 0.75rem 7px;
-        left: 2%;
-        top: 46%;
-        bottom: 8%;
-        width: 168px;
-    }
+  .shortcut_key_container {
+    top: 9%;
   }
 
+  .panelColumn {
+    row-gap: 1.75rem;
+    padding: 0.75rem 7px;
+    left: 2%;
+    top: 46%;
+    bottom: 8%;
+    width: 168px;
+  }
+}
