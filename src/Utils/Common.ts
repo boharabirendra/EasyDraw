@@ -98,9 +98,11 @@ export function selectionIndicateRectangle(
  * Fuction that calculates the even or odd number.
  */
 export function calculateEvenOrOdd(num: number) {
-  if (num % 2 == 1) {
-    console.log("Number is even ", num);
-  } else {
-    console.log("Number is odd ", num);
-  }
+        if (num % 2 == 0) { 
+          console.log("Num is even ", num);
+        } else { 
+          console.log("Num is odd ", num);
+        }
+      }
+    
 }
