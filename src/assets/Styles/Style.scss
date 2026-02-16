@@ -60,7 +60,7 @@
       button {
         cursor: pointer;
         background-color: transparent;
-        border: none;
+        border: 2px solid;
         padding: 8px 12px;
         border-radius: 10px;
         box-shadow: 0px 0px 0.5 gray;
@@ -82,7 +82,7 @@
   
     .zoom {
       background-color: #ececf4;
-      border-radius: 5px;
+      border-radius: 12px;
       display: flex;
       align-items: center;
       column-gap: 0.5rem;
@@ -231,7 +231,7 @@
     #shortcut_items{
       padding: 0.75rem 2rem;
       border-radius: 5px;
-      background-color: "white";
+      background-color: red;
       box-shadow: 0px 0px 0.9310142993927002px 0px rgba(0, 0, 0, 0.17),
       0px 0px 3.1270833015441895px 0px rgba(0, 0, 0, 0.08),
       0px 7px 14px 0px rgba(0, 0, 0, 0.05);
