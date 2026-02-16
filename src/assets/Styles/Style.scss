@@ -219,8 +219,15 @@
     top: 2%;
     left: 2%;
     width: 290px;
-    button{
-      padding: 0.35rem 0.75rem;
+        button{
+          padding: 0.35rem 0.75rem;
+          border-radius: 2px;
+          border-width: 5px;
+          font-family: "Virgil";
+          font-size: 14px;
+          color: white;
+          margin-bottom: 25px;
+        }
       border-radius: 5px;
       border: none;
       font-family: "Virgil";
