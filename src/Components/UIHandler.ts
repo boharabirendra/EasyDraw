@@ -7,7 +7,7 @@ export function handleShortcut() {
   ) as HTMLDivElement;
   shortcutItemsEl.style.display = "none";
   let flag = false;
-  const shortcutEl = document.querySelector("#shortcut") as HTMLButtonElement;
+  const shortcutEl = document.querySelector("#shortcut") as HTMLButtonElement; shortcutEl.textContent = 'Shortcuts';
   shortcutEl.addEventListener("click", () => {
     if (flag) {
       shortcutItemsEl.style.display = "none";
