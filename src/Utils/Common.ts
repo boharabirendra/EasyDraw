@@ -22,7 +22,7 @@ export enum SHAPES {
   DRAW,
 }
 
-export function adjustToolSection() {
+function adjustToolSection() {
   removeBg();
   cursorBtn.style.backgroundColor = "#E0DFFF";
   body.style.cursor = "default";
