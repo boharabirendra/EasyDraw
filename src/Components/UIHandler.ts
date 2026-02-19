@@ -1,23 +1,21 @@
 import { Shape } from "../Shapes/Shape";
 
-/**Shortcut section */
-export function handleShortcut() {
+export function handleShortcuts() {
   const shortcutItemsEl = document.querySelector(
-    "#shortcut_items"
+    '#shortcut_items'
   ) as HTMLDivElement;
-  shortcutItemsEl.style.display = "none";
-  let flag = false;
-  const shortcutEl = document.querySelector("#shortcut") as HTMLButtonElement;
-  shortcutEl.addEventListener("click", () => {
-    if (flag) {
-      shortcutItemsEl.style.display = "none";
-      flag = false;
-    } else {
-      shortcutItemsEl.style.display = "block";
-      flag = true;
-    }
-  });
-}
+  shortcutItemsEl.style.display = 'none';
+    const shortcutEl = document.querySelector('#shortcut') as HTMLButtonElement;
+    shortcutEl.addEventListener('click', () => {
+      if (flag) {
+        shortcutItemsEl.style.display = 'none';
+        flag = false;
+      } else {
+        shortcutItemsEl.style.display = 'block';
+        flag = true;
+      }
+    });
+
 
 export function toggleSidePanel(isShowingSidePanel: boolean) {
   const sidePane = document.querySelector(".panelColumn") as HTMLDivElement;
