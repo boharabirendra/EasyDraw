@@ -93,8 +93,16 @@ export class Canvas {
     this.canvas.addEventListener("mousemove", this.onMouseMove.bind(this));
     this.canvas.addEventListener("mouseup", this.onMouseUp.bind(this));
     this.canvas.addEventListener("dblclick", this.onDoubleClick.bind(this));
-    document.addEventListener("click", () => {
+    document.addEventListener("click", (event) => {
       activateRedoUndoBtn(this.undoStack, this.redoStack);
+      const shortcutItemsEl = document.querySelector(
+        '#shortcut_items'
+      ) as HTMLDivElement;
+      const shortcutEl = document.querySelector('#shortcut') as HTMLButtonElement;
+      if (!shortcutEl.contains(event.target) && !shortcutItemsEl.contains(event.target) && flag) {
+        shortcutItemsEl.style.display = 'none';
+        flag = false;
+      }
     });
 
     this.canvas.addEventListener("touchstart", this.onTouchStart.bind(this));
