@@ -7,16 +7,16 @@ export function handleShortcut() {
   ) as HTMLDivElement;
   shortcutItemsEl.style.display = "none";
   let flag = false;
-  const shortcutEl = document.querySelector("#shortcut") as HTMLButtonElement;
-  shortcutEl.addEventListener("click", () => {
-    if (flag) {
-      shortcutItemsEl.style.display = "none";
-      flag = false;
-    } else {
-      shortcutItemsEl.style.display = "block";
-      flag = true;
-    }
-  });
+  const shortcutEl = document.querySelector("#shortcuts") as HTMLButtonElement;
+shortcutEl.addEventListener("click", () => {
+  if (flag) {
+    shortcutItemsEl.style.display = "none";
+    flag = false;
+  } else {
+    shortcutItemsEl.style.display = "block";
+    flag = true;
+  }
+});
 }
 
 export function toggleSidePanel(isShowingSidePanel: boolean) {
