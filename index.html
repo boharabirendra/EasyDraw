@@ -1,13 +1,9 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link
-      rel="icon"
-      href="./src/assets/Images/ticon.ico"
-      type="image/icon type"
-    />
+    <link rel="icon" href="./src/assets/Images/ticon.ico" type="image/icon type" />
     <title>EasyDraw</title>
     <link rel="stylesheet" href="/src/assets/Styles/Style.css" />
   </head>
@@ -88,71 +84,21 @@
       <div class="panel__section">
         <h3>Stoke</h3>
         <div class="color-picker__top-picks stroke__color__container">
-          <button
-            class="color-picker__button"
-            style="background-color: #1e1e1e"
-            title="#1e1e1e"
-            data-color="#1e1e1e"
-          ></button>
-          <button
-            class="color-picker__button"
-            style="background-color: #e03131"
-            title="#e03131"
-            data-color="#e03131"
-          ></button>
-          <button
-            class="color-picker__button"
-            style="background-color: #2f9e44"
-            title="#2f9e44"
-            data-color="#2f9e44"
-          ></button>
-          <button
-            class="color-picker__button"
-            style="background-color: #1971c2"
-            title="#1971c2"
-            data-color="#1971c2"
-          ></button>
-          <button
-            class="color-picker__button"
-            style="background-color: #f08c00"
-            title="#f08c00"
-            data-color="#f08c00"
-          ></button>
+          <button class="color-picker__button" style="background-color: #1e1e1e" title="#1e1e1e" data-color="#1e1e1e"></button>
+          <button class="color-picker__button" style="background-color: #e03131" title="#e03131" data-color="#e03131"></button>
+          <button class="color-picker__button" style="background-color: #2f9e44" title="#2f9e44" data-color="#2f9e44"></button>
+          <button class="color-picker__button" style="background-color: #1971c2" title="#1971c2" data-color="#1971c2"></button>
+          <button class="color-picker__button" style="background-color: #f08c00" title="#f08c00" data-color="#f08c00"></button>
         </div>
       </div>
       <div class="panel__section">
         <h3>Background</h3>
         <div class="color-picker__top-picks background__color__container">
-          <button
-            class="color-picker__button"
-            style="background-color: transparent; box-shadow: 0px 0px 1px gray;"
-            title="transparent"
-            data-color="transparent"
-          ></button>
-          <button
-            class="color-picker__button"
-            style="background-color: #ffc9c9"
-            title="#ffc9c9"
-            data-color="#ffc9c9"
-          ></button>
-          <button
-            class="color-picker__button"
-            style="background-color: #b2f2bb"
-            title="#b2f2bb"
-            data-color="#b2f2bb"
-          ></button>
-          <button
-            class="color-picker__button"
-            style="background-color: #a5d8ff"
-            title="#a5d8ff"
-            data-color="#a5d8ff"
-          ></button>
-          <button
-            class="color-picker__button"
-            style="background-color: #ffec99"
-            title="#ffec99"
-            data-color="#ffec99"
-          ></button>
+          <button class="color-picker__button" style="background-color: transparent; box-shadow: 0px 0px 1px gray" title="transparent" data-color="transparent"></button>
+          <button class="color-picker__button" style="background-color: #ffc9c9" title="#ffc9c9" data-color="#ffc9c9"></button>
+          <button class="color-picker__button" style="background-color: #b2f2bb" title="#b2f2bb" data-color="#b2f2bb"></button>
+          <button class="color-picker__button" style="background-color: #a5d8ff" title="#a5d8ff" data-color="#a5d8ff"></button>
+          <button class="color-picker__button" style="background-color: #ffec99" title="#ffec99" data-color="#ffec99"></button>
         </div>
       </div>
       <div class="stroke__width panel__section" id="stroke__width">
@@ -207,31 +153,31 @@
             <img src="./src/assets/Images/delete.png" alt="Delete" />
           </button>
           <button id="exportBtn" title="Export image">
-            <img src="./src/assets/Images/export.png" alt="Export">
+            <img src="./src/assets/Images/export.png" alt="Export" />
           </button>
           <button id="saveBtn" title="Save">
-            <img src="./src/assets/Images/saved.png" alt="Saved">
+            <img src="./src/assets/Images/saved.png" alt="Saved" />
           </button>
         </div>
       </div>
     </div>
     <div class="shortcut_key_container">
-        <div>
-          <button id="shortcut">Shortcut</button>
-        </div>
-        <div id="shortcut_items">
-          <ol>
-            <li>Ctrl + z (Undo)</li>
-            <li>Ctrl + y (Redo)</li>
-            <li>Delete key to selected shape</li>
-            <li>Double click to add text</li>
-          </ol>
-        </div>
-    </div>  
+      <div>
+        <button id="shortcut">Shortcuts</button>
+      </div>
+      <div id="shortcut_items">
+        <ol>
+          <li>Ctrl + z (Undo)</li>
+          <li>Ctrl + y (Redo)</li>
+          <li>Delete key to selected shape</li>
+          <li>Double click to add text</li>
+        </ol>
+      </div>
+    </div>
     <div id="app">
       <canvas id="canvas"></canvas>
     </div>
-    <img id="exportedImage" style="visibility: hidden;" alt="Exported PNG">
+    <img id="exportedImage" style="visibility: hidden" alt="Exported PNG" />
     <script type="module" src="/src/main.ts"></script>
   </body>
 </html>
