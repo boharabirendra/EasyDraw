@@ -27,16 +27,10 @@ jobs:
             . $USER@$HOST:~/EasyDraw/ \
             -e "ssh -o StrictHostKeyChecking=no -i github-ec2.pem"
 
-          # Option 2: if preferred, pull from GitHub
-          # ssh -o StrictHostKeyChecking=no -i github-ec2.pem $USER@$HOST "
-          #   cd ~/myapp
-          #   git pull origin main
-          #   npm install
-          #   pm2 restart myapp
-          # "
-
           # Then reinstall deps and restart
           ssh -o StrictHostKeyChecking=no -i github-ec2.pem $USER@$HOST "
+            export NVM_DIR=/home/ubuntu/.nvm
+            [ -s \"\$NVM_DIR/nvm.sh\" ] && \. \"\$NVM_DIR/nvm.sh\"
             cd ~/EasyDraw
             npm install
             npm run build
