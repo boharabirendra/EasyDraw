@@ -39,5 +39,6 @@ jobs:
           ssh -o StrictHostKeyChecking=no -i github-ec2.pem $USER@$HOST "
             cd ~/EasyDraw
             npm install
+            npm run build
             pm2 restart easydraw
           "
